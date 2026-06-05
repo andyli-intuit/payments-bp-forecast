@@ -126,6 +126,9 @@ table.st{width:100%;border-collapse:collapse;font-size:11px;}
 .st th.hm26{background:#1A4D6C;}.st th.hm27{background:#5C3400;}.st th.hm26.htot,.st th.hm27.htot{font-weight:800;}
 /* Delta table headers */
 .st th.hd26{background:#2C4A2C;}.st th.hd27{background:#4A2C2C;}.st th.hd26.htot,.st th.hd27.htot{font-weight:800;}
+/* Forecast-period column headers (dates) — orange to match forecast series elsewhere.
+   !important so it wins over the per-table h26/ht26/hd26 background rules regardless of source order. */
+.st th.hfcst{background:#E65100 !important;color:#fff;}
 .st td{padding:6px 10px;text-align:right;border-bottom:1px solid #F0F2F5;white-space:nowrap;}
 .st td:first-child{text-align:left;color:var(--text2);}
 .st .shd td{background:var(--navy2);color:#fff;font-weight:700;font-size:10px;text-transform:uppercase;padding:5px 10px;}
@@ -165,8 +168,9 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
     <div class="ctrl">
       <div class="ctrl-lbl">Zoom</div>
       <div class="pill-group">
-        <button class="pill on" onclick="setZoom('fy2627')">FY26–27</button>
-        <button class="pill" onclick="setZoom('fy2529')">FY25–29</button>
+        <button class="pill" data-zoom="fy26" onclick="setZoom('fy26')">FY26</button>
+        <button class="pill on" data-zoom="fy2627" onclick="setZoom('fy2627')">FY26–27</button>
+        <button class="pill" data-zoom="fy2529" onclick="setZoom('fy2529')">FY25–29</button>
       </div>
     </div>
     <div class="ctrl">
@@ -212,7 +216,7 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Annual Forecast Summary</div><div class="card-meta">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Annual Forecast Summary</div><div class="card-meta card-fy" data-pre="June Current Estimate (Risk Adjusted) · ">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
     </div>
     <div class="card-body"><div id="ov-metrics"></div></div>
   </div>
@@ -255,7 +259,7 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-pm" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payments</div><div class="card-meta">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payments</div><div class="card-meta card-fy" data-pre="June Current Estimate (Risk Adjusted) · ">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-pm">FY26–27</span>
     </div>
     <div class="card-body">
@@ -295,7 +299,7 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-bp" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Bill Pay</div><div class="card-meta">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Bill Pay</div><div class="card-meta card-fy" data-pre="June Current Estimate (Risk Adjusted) · ">June Current Estimate (Risk Adjusted) · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-bp">FY26–27</span>
     </div>
     <div class="card-body">
@@ -371,8 +375,8 @@ const QL={
   fy29:['Q1 FY29','Q2 FY29','Q3 FY29','Q4 FY29'],
 };
 
-// FY25: idx 0-8 actuals, 9-11 forecast. FY26: monthly idx 9+ (May-26) = forecast; quarterly idx 3 (Q4) = forecast
-const ACT25=9, DASH26=9;
+// FY25: idx 0-8 actuals, 9-11 forecast. FY26: monthly idx 10+ (Jun-26) = forecast (May-26 now actual); quarterly idx 3 (Q4) = forecast
+const ACT25=9, DASH26=10;
 const isFcst=(fy,i)=>{
   if(fy==='fy25') return i>=ACT25;
   if(fy==='fy26') return period==='monthly' ? i>=DASH26 : i>=3; // Q4 FY26 = forecast
@@ -674,18 +678,20 @@ const MFP2={
   tcogs:{fy26:[17.397,18.859,17.991,18.763,26.420,19.179,17.226,26.091,28.149,25.578,25.496,25.249],fy27:[25.405,26.188,27.344,24.711,26.457,25.013,19.942,23.267,24.281,23.506,25.092,21.974]},
 };
 
+// May Pass 2 Risk Adj. — Model tab, Payments COGS Model_MFP2_v5.3 (Risk-adjusted - RISK VIEW ONLY).xlsx
 const MFP2_RA={
-  ptpv:{fy26:[16.398,16.846,17.947,15.187,16.687,15.322,15.156,18.027,18.901,17.728,18.963,19.310],fy27:[19.678,20.215,21.536,18.225,20.024,18.386,18.187,21.632,22.681,21.274,22.756,19.310]},
-  btpv:{fy26:[3.390,3.621,4.049,3.612,4.694,3.786,3.943,4.789,5.093,5.187,5.439,5.735],fy27:[7.146,7.326,7.493,7.634,7.796,8.021,8.355,8.655,8.945,9.255,9.555,9.819]},
-  pnl:{fy26:[15.180,15.816,15.361,15.431,21.948,16.863,14.123,20.480,20.072,18.913,19.522,19.034],fy27:[18.574,19.089,20.246,17.262,18.888,17.417,17.239,20.338,21.277,20.012,21.346,18.247]},
-  pnlr:{fy26:[9.257,9.389,8.559,10.16,13.153,11.006,9.318,11.361,10.619,10.668,10.295,9.857],fy27:[9.439,9.443,9.401,9.472,9.433,9.473,9.479,9.402,9.381,9.407,9.38,9.45]},
-  pcogs:{fy26:[15.726,16.366,16.250,15.507,22.140,16.438,14.314,20.636,20.048,19.266,19.802,19.069],fy27:[18.896,19.411,20.323,17.584,19.210,17.495,17.561,20.661,21.354,20.334,21.668,18.325]},
-  pcogsr:{fy26:[9.59,9.715,9.054,10.211,13.268,10.728,9.444,11.448,10.607,10.867,10.442,9.875],fy27:[9.603,9.602,9.437,9.649,9.594,9.515,9.656,9.551,9.415,9.558,9.522,9.49]},
-  bnl:{fy26:[1.345,2.215,1.717,2.842,3.973,2.222,2.149,4.690,7.439,5.536,4.932,5.399],fy27:[5.580,5.711,5.832,5.936,6.054,6.218,6.462,6.681,6.893,7.119,7.338,7.531]},
-  bnlr:{fy26:[3.967,6.116,4.240,7.869,8.464,5.869,5.451,9.793,14.605,10.674,9.069,9.416],fy27:[7.808,7.795,7.784,7.775,7.765,7.752,7.734,7.719,7.705,7.692,7.680,7.669]},
-  bcogs:{fy26:[1.485,2.353,1.850,2.977,4.134,2.591,2.685,5.130,7.834,6.037,5.418,5.904],fy27:[6.191,6.459,6.703,6.809,6.929,7.201,7.451,7.675,7.996,8.241,8.493,8.718]},
-  bcogsr:{fy26:[4.38,6.498,4.570,8.240,8.806,6.843,6.810,10.713,15.381,11.638,9.961,10.295],fy27:[8.663,8.817,8.946,8.919,8.888,8.978,8.918,8.868,8.938,8.904,8.889,8.879]},
-  tcogs:{fy26:[17.397,18.859,17.991,18.763,26.420,19.179,17.226,26.091,28.149,25.578,25.496,25.249],fy27:[25.405,26.188,27.344,24.711,26.457,25.013,25.329,28.653,29.667,28.893,30.479,27.361]},
+  ptpv:{fy26:[16.398,16.846,17.947,15.187,16.687,15.322,15.156,18.027,18.901,17.728,18.963,19.31],fy27:[19.678,20.215,21.536,18.225,20.024,18.386,18.187,21.632,22.681,21.274,22.756,19.31]},
+  btpv:{fy26:[3.39,3.621,4.049,3.612,4.694,3.786,3.943,4.789,5.093,5.187,5.439,5.735],fy27:[7.146,7.326,7.493,7.634,7.796,8.021,8.355,8.655,8.945,9.255,9.555,9.819]},
+  pnl:{fy26:[15.18,15.816,15.361,15.431,21.948,16.863,14.123,20.48,20.072,17.913,18.022,17.034],fy27:[18.574,19.089,20.246,17.262,18.888,17.417,17.239,20.338,21.277,20.012,21.346,18.247]},
+  pnlr:{fy26:[9.257,9.389,8.559,10.16,13.153,11.006,9.318,11.361,10.619,10.104,9.504,8.821],fy27:[9.439,9.443,9.401,9.472,9.433,9.473,9.479,9.402,9.381,9.407,9.38,9.45]},
+  pcogs:{fy26:[15.726,16.366,16.25,15.507,22.14,16.438,14.314,20.636,20.048,18.266,18.302,17.069],fy27:[18.896,19.411,20.323,17.584,19.21,17.495,17.561,20.661,21.354,20.334,21.668,18.325]},
+  pcogsr:{fy26:[9.59,9.715,9.054,10.211,13.268,10.728,9.444,11.448,10.607,10.303,9.651,8.84],fy27:[9.603,9.602,9.437,9.649,9.594,9.515,9.656,9.551,9.415,9.558,9.522,9.49]},
+  bnl:{fy26:[1.345,2.215,1.717,2.842,3.973,2.222,2.149,4.69,7.439,5.536,4.932,5.399],fy27:[5.58,5.711,5.832,5.936,6.054,6.218,6.462,6.681,6.893,7.119,7.338,7.531]},
+  bnlr:{fy26:[3.967,6.116,4.24,7.869,8.464,5.869,5.451,9.793,14.605,10.674,9.069,9.416],fy27:[7.808,7.795,7.784,7.775,7.765,7.752,7.734,7.719,7.705,7.692,7.68,7.669]},
+  bcogs:{fy26:[1.485,2.353,1.85,2.977,4.134,2.591,2.685,5.13,7.834,6.037,5.418,5.904],fy27:[6.191,6.459,6.703,6.809,6.929,7.201,7.451,7.675,7.996,8.241,8.493,8.718]},
+  bcogsr:{fy26:[4.38,6.498,4.57,8.24,8.806,6.843,6.81,10.713,15.381,11.638,9.961,10.295],fy27:[8.663,8.817,8.946,8.919,8.888,8.978,8.918,8.868,8.938,8.904,8.889,8.879]},
+  combined_rate:{fy26:[8.351,8.81,7.764,9.72,12.124,9.988,8.52,11.032,11.465,10.233,9.407,8.958],fy27:[9.004,9.005,8.983,8.971,8.965,8.95,8.93,8.921,8.907,8.887,8.877,8.85]},
+  tcogs:{fy26:[17.397,18.859,17.991,18.763,26.42,19.179,17.226,26.091,28.149,24.578,23.996,23.249],fy27:[25.405,26.188,27.344,24.711,26.457,25.013,25.329,28.653,29.667,28.893,30.479,27.361]},
 };
 
 // Annual FY25 actuals for ITPY base
@@ -730,14 +736,16 @@ const cmpSrc=()=>cmp==='ra'?MFP2_RA:cmp==='tp2rg'?TP2_RG:cmp==='tp2mlr'?TP2_MLR:
 const cmpColor=()=>cmp==='ra'?C_FCST_RA:cmp==='tp2rg'?C_FCST_RG:cmp==='tp2mlr'?C_FCST_MLR:C_FCST_M;
 const cmpLabel=()=>cmp==='ra'?'MFP2 Risk Adj.':cmp==='tp2rg'?'TP2.5 Risk Goal':cmp==='tp2mlr'?'TP2.5 Most Likely Risk':'May Pass 2';
 const CHARTS={};
-const FYS={fy2627:['fy26','fy27'],fy2529:['fy25','fy26','fy27','fy28','fy29']};
+const FYS={fy26:['fy26'],fy2627:['fy26','fy27'],fy2529:['fy25','fy26','fy27','fy28','fy29']};
+// Tables show FY26 and FY27 side-by-side; FY26-only zoom hides the FY27 columns + delta
+const showFY27=()=>zoom!=='fy26';
 // Two-color scheme: blue = actuals, orange = forecast
 const C_ACT='#1565C0', C_FCST='#E65100';
 const C_ACT_M='#64B5F6', C_FCST_M='#FFAB76'; // MFP2 compare colors
 const C_FCST_RA='#A5D6A7'; // MFP2 RA compare color (green)
 const FYN={fy25:'FY25',fy26:'FY26',fy27:'FY27',fy28:'FY28',fy29:'FY29'};
-// Show data labels: quarterly always; monthly only for FY26-27 zoom (24 bars, manageable)
-const showDL=()=>period==='quarterly'||(period==='monthly'&&zoom==='fy2627');
+// Show data labels: quarterly always; monthly only for FY26 / FY26-27 zoom (≤24 bars, manageable)
+const showDL=()=>period==='quarterly'||(period==='monthly'&&(zoom==='fy26'||zoom==='fy2627'));
 
 // ═══════════════════════════════════
 // CHART ENGINE
@@ -978,19 +986,22 @@ function lineDs(key) {
     const vals = getArr(TP2, fy, key, false); if (!vals) return;
     const off = fi * n;
     if (period === 'monthly') {
-      const qcut = fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : -1;
-      if (qcut >= 0) {
-        for (let i=0; i<=qcut; i++) solid[off+i] = vals[i];
-        for (let i=qcut; i<n; i++) dashed[off+i] = vals[i];
+      // firstFcst = index of first forecast month; last actual = firstFcst-1.
+      // Solid covers actuals through last actual; dashed starts AT the last actual so the
+      // last-actual→first-forecast segment renders dotted (the shared point is the bridge).
+      const firstFcst = fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : 0;
+      if (firstFcst > 0) {
+        for (let i=0; i<firstFcst; i++) solid[off+i] = vals[i];
+        for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
       } else {
         for (let i=0; i<n; i++) dashed[off+i] = vals[i];
       }
     } else {
-      // quarterly: Q4 FY26 (index 3) is first forecast; FY25 last actual = Q3 (index 2)
-      const qcut = fy==='fy25' ? 2 : fy==='fy26' ? 3 : -1;
-      if (qcut >= 0) {
-        for (let i=0; i<=qcut; i++) solid[off+i] = vals[i];
-        for (let i=qcut; i<n; i++) dashed[off+i] = vals[i];
+      // quarterly: Q4 FY26 (index 3) is first forecast; FY25 last actual = Q3 (index 2 → first fcst 3)
+      const firstFcst = fy==='fy25' ? 3 : fy==='fy26' ? 3 : 0;
+      if (firstFcst > 0) {
+        for (let i=0; i<firstFcst; i++) solid[off+i] = vals[i];
+        for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
       } else {
         for (let i=0; i<n; i++) dashed[off+i] = vals[i];
       }
@@ -1055,27 +1066,16 @@ function lineDs2(key1, key2, label1, label2) {
     fys.forEach((fy,fi)=>{
       const vals = getArr(TP2,fy,key,false); if(!vals) return;
       const off = fi*n;
-      if(period==='monthly'){
-        const cut = fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : -1;
-        if(cut>=0){
-          // actuals portion → solid
-          for(let i=0;i<=cut;i++) solid[off+i]=vals[i];
-          // forecast portion → dashed (start at cut to connect)
-          for(let i=cut;i<n;i++) dashed[off+i]=vals[i];
-        } else {
-          // all forecast → dashed; bridge from prev FY's last solid/dashed
-          for(let i=0;i<n;i++) dashed[off+i]=vals[i];
-        }
+      // firstFcst = index of first forecast period; dashed starts at firstFcst-1 (the last
+      // actual) so the last-actual→first-forecast segment renders dotted.
+      const firstFcst = period==='monthly'
+        ? (fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : 0)
+        : (fy==='fy25' ? 3 : fy==='fy26' ? 3 : 0); // quarterly: Q4 (idx 3) first forecast
+      if(firstFcst>0){
+        for(let i=0;i<firstFcst;i++) solid[off+i]=vals[i];
+        for(let i=firstFcst-1;i<n;i++) dashed[off+i]=vals[i];
       } else {
-        // quarterly
-        const cut = fy==='fy25' ? ACT25 : fy==='fy26' ? 3 : -1; // ACT25=9 in monthly maps to Q3 idx=2
-        const qcut = fy==='fy25' ? 2 : fy==='fy26' ? 3 : -1; // Q3 FY25 last actual; Q4 FY26 first forecast
-        if(qcut>=0){
-          for(let i=0;i<=qcut;i++) solid[off+i]=vals[i];
-          for(let i=qcut;i<n;i++) dashed[off+i]=vals[i];
-        } else {
-          for(let i=0;i<n;i++) dashed[off+i]=vals[i];
-        }
+        for(let i=0;i<n;i++) dashed[off+i]=vals[i];
       }
     });
 
@@ -1146,12 +1146,19 @@ function renderMets(id, defs) {
       ?`<span class="itpy-pill up">${iv} ITPY</span>`
       :`<span class="itpy-pill dn">${iv} ITPY</span>`;
     const fmt=bps?fmtB:fmtM;
+    const inc27=showFY27();
     let cmpHtml='';
     if(cmp!=='off'&&cmpSrc()[d.k]){
       const mv26=bps?annAvg(cmpSrc(),'fy26',d.k):annSum(cmpSrc(),'fy26',d.k);
       const mv27=bps?annAvg(cmpSrc(),'fy27',d.k):annSum(cmpSrc(),'fy27',d.k);
-      cmpHtml=`<div class="met-cmp">${cmpLabel()} → FY26: ${fmt(mv26)} · FY27: ${fmt(mv27)}</div>`;
+      cmpHtml=`<div class="met-cmp">${cmpLabel()} → FY26: ${fmt(mv26)}${inc27?` · FY27: ${fmt(mv27)}`:''}</div>`;
     }
+    const col27=inc27?`
+        <div class="fy-col">
+          <span class="fy-yr">FY27</span>
+          <span class="fy-val ${d.vc||''}">${fmt(v27)}</span>
+          <span class="itpy">${p(i27)}<span style="font-size:8px;color:var(--text3)">vs FY26</span></span>
+        </div>`:'';
     return`<div class="met ${d.cc}">
       <div class="met-lbl">${d.lbl}</div>
       <div class="fy-row">
@@ -1159,12 +1166,7 @@ function renderMets(id, defs) {
           <span class="fy-yr">FY26</span>
           <span class="fy-val ${d.vc||''}">${fmt(v26)}</span>
           <span class="itpy">${p(i26)}<span style="font-size:8px;color:var(--text3)">vs FY25</span></span>
-        </div>
-        <div class="fy-col">
-          <span class="fy-yr">FY27</span>
-          <span class="fy-val ${d.vc||''}">${fmt(v27)}</span>
-          <span class="itpy">${p(i27)}<span style="font-size:8px;color:var(--text3)">vs FY26</span></span>
-        </div>
+        </div>${col27}
       </div>
       ${cmpHtml}
     </div>`;
@@ -1246,8 +1248,9 @@ const TBL_ROWS=[
 ];
 
 function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOverride) {
-  const n26=cols26.length, n27=cols27.length;
-  const hdrs=['Metric',...cols26,'FY26',...cols27,'FY27'];
+  const inc27=showFY27();
+  const n26=cols26.length, n27=inc27?cols27.length:0;
+  const hdrs=inc27?['Metric',...cols26,'FY26',...cols27,'FY27']:['Metric',...cols26,'FY26'];
   const gArr26=(k,bps)=>{const a=src[k]&&src[k].fy26;if(!a)return null;return isMon?[...a]:(bps?avgQ(a):sumQ(a));};
   const gArr27=(k,bps)=>{const a=src[k]&&src[k].fy27;if(!a)return null;return isMon?[...a]:(bps?avgQ(a):sumQ(a));};
   const gAnn=(fy,k,bps)=>{const a=src[k]&&src[k][fy];if(!a)return null;return bps?a.reduce((x,y)=>x+y,0)/a.length:a.reduce((x,y)=>x+y,0);};
@@ -1255,9 +1258,9 @@ function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOver
   let html=`<div class="tbl-wrap" style="border-radius:0 0 8px 8px;overflow:hidden;"><table class="st"><thead><tr>`;
   hdrs.forEach((h,i)=>{
     let cls='',lbl=h;
-    if(i>=1&&i<=n26){cls=clsPrefix+'26';if(isMon&&isFcst('fy26',i-1))lbl+='*';}
+    if(i>=1&&i<=n26){cls=clsPrefix+'26';if(isFcst('fy26',i-1)){cls+=' hfcst';if(isMon)lbl+='*';}}
     else if(i===n26+1) cls=clsPrefix+'26 htot';
-    else if(i>=n26+2&&i<=n26+1+n27){cls=clsPrefix+'27';lbl+=(isMon?'*':'');}
+    else if(i>=n26+2&&i<=n26+1+n27){cls=clsPrefix+'27 hfcst';lbl+=(isMon?'*':'');}
     else if(i===n26+2+n27) cls=clsPrefix+'27 htot';
     html+=`<th class="${cls}">${lbl}</th>`;
   });
@@ -1267,22 +1270,25 @@ function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOver
     const fmt=fmtOverride||(r.gb?fmtTpv:r.bps?fmtB:fmtM);
     const dFmt=r.gb?fmtTpvd:r.bps?fmtBd:fmtMd;
     const v26=gArr26(r.k,r.bps), v27=gArr27(r.k,r.bps);
-    if(!v26||!v27){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">—</td></tr>`;return;}
+    if(!v26||(inc27&&!v27)){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">—</td></tr>`;return;}
     const a26=gAnn('fy26',r.k,r.bps);
     const a27=gAnn('fy27',r.k,r.bps);
+    const aDelta=!!fmtOverride;
     html+=`<tr><td>${r.l}</td>`;
     v26.forEach((v,i)=>{
       const isDelta=!!fmtOverride;
       const cls=`${clsPrefix}26${isFcst('fy26',i)?' fcst':''}${isDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
       html+=`<td class="${cls}">${fmt(v)}</td>`;
     });
-    const aDelta=!!fmtOverride;
     html+=`<td class="${clsPrefix}26 tot${aDelta&&a26!=null?(a26>0?' d-up':' d-dn'):''}">${fmt(a26)}</td>`;
-    v27.forEach(v=>{
-      const cls=`${clsPrefix}27 fcst${aDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
-      html+=`<td class="${cls}">${fmt(v)}</td>`;
-    });
-    html+=`<td class="${clsPrefix}27 tot${aDelta&&a27!=null?(a27>0?' d-up':' d-dn'):''}">${fmt(a27)}</td></tr>`;
+    if(inc27){
+      v27.forEach(v=>{
+        const cls=`${clsPrefix}27 fcst${aDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
+        html+=`<td class="${cls}">${fmt(v)}</td>`;
+      });
+      html+=`<td class="${clsPrefix}27 tot${aDelta&&a27!=null?(a27>0?' d-up':' d-dn'):''}">${fmt(a27)}</td>`;
+    }
+    html+=`</tr>`;
   });
   if(isMon) html+=`<tr><td colspan="${hdrs.length}" style="font-size:9px;color:var(--text3);padding:6px 10px">* = forecast period</td></tr>`;
   html+='</tbody></table></div>';
@@ -1344,14 +1350,15 @@ function buildTable() {
     else if(a27) DELTA[r.k].fy27=a27.map(()=>null);
   });
 
-  const n26=cols26.length, n27=cols27.length;
-  const hdrs=['Metric',...cols26,'FY26',...cols27,'FY27'];
+  const inc27=showFY27();
+  const n26=cols26.length, n27=inc27?cols27.length:0;
+  const hdrs=inc27?['Metric',...cols26,'FY26',...cols27,'FY27']:['Metric',...cols26,'FY26'];
   html += `<div class="tbl-block"><div class="tbl-delta-hdr"><span class="tbl-delta-lbl" style="font-size:14px;font-weight:700;color:#fff;">Delta</span><span class="tbl-delta-sub">${lbl1} − ${lbl2}</span></div><div class="tbl-wrap"><table class="st"><thead><tr>`;
   hdrs.forEach((h,i)=>{
     let cls='',lbl=h;
-    if(i>=1&&i<=n26){cls='hd26';if(isMon&&isFcst('fy26',i-1))lbl+='*';}
+    if(i>=1&&i<=n26){cls='hd26';if(isFcst('fy26',i-1)){cls+=' hfcst';if(isMon)lbl+='*';}}
     else if(i===n26+1) cls='hd26 htot';
-    else if(i>=n26+2&&i<=n26+1+n27){cls='hd27';lbl+=(isMon?'*':'');}
+    else if(i>=n26+2&&i<=n26+1+n27){cls='hd27 hfcst';lbl+=(isMon?'*':'');}
     else if(i===n26+2+n27) cls='hd27 htot';
     html+=`<th class="${cls}">${lbl}</th>`;
   });
@@ -1362,19 +1369,22 @@ function buildTable() {
     const d26=DELTA[r.k]?.fy26, d27=DELTA[r.k]?.fy27;
     const dArr26=d26?(isMon?d26:(r.bps?avgQ(d26):sumQ(d26))):null;
     const dArr27=d27?(isMon?d27:(r.bps?avgQ(d27):sumQ(d27))):null;
-    if(!dArr26||!dArr27){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">no data</td></tr>`;return;}
+    if(!dArr26||(inc27&&!dArr27)){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">no data</td></tr>`;return;}
     const da26=r.bps?d26.reduce((a,b)=>a+(b||0),0)/d26.length:d26.reduce((a,b)=>a+(b||0),0);
-    const da27=r.bps?d27.reduce((a,b)=>a+(b||0),0)/d27.length:d27.reduce((a,b)=>a+(b||0),0);
+    const da27=inc27?(r.bps?d27.reduce((a,b)=>a+(b||0),0)/d27.length:d27.reduce((a,b)=>a+(b||0),0)):null;
     const dSign=(v)=>v==null?'':(Math.abs(v)<0.05?' d-zero':v>0?' d-up':' d-dn');
     html+=`<tr><td>${r.l}</td>`;
     dArr26.forEach((v,i)=>{
       html+=`<td class="hd26${isFcst('fy26',i)?' fcst':''}${dSign(v)}">${dFmt(v)}</td>`;
     });
     html+=`<td class="hd26 tot${dSign(da26)}">${dFmt(da26)}</td>`;
-    dArr27.forEach(v=>{
-      html+=`<td class="hd27 fcst${dSign(v)}">${dFmt(v)}</td>`;
-    });
-    html+=`<td class="hd27 tot${dSign(da27)}">${dFmt(da27)}</td></tr>`;
+    if(inc27){
+      dArr27.forEach(v=>{
+        html+=`<td class="hd27 fcst${dSign(v)}">${dFmt(v)}</td>`;
+      });
+      html+=`<td class="hd27 tot${dSign(da27)}">${dFmt(da27)}</td>`;
+    }
+    html+=`</tr>`;
   });
   const note=isMon?'* = forecast period · ':'';
   html+=`<tr><td colspan="${hdrs.length}" style="font-size:9px;color:var(--text3);padding:6px 10px">${note}positive = T1 higher than T2</td></tr>`;
@@ -1390,10 +1400,13 @@ function buildTable() {
 // ZOOM PILLS
 // ═══════════════════════════════════
 function updatePills() {
-  const lbl=zoom==='fy2627'?'FY26–27':'FY25–29';
+  const lbl=zoom==='fy26'?'FY26':zoom==='fy2627'?'FY26–27':'FY25–29';
   ['z-ov','z-ov2','z-ov3','z-ov4','z-ov5','z-pm','z-pm2','z-pm3','z-pm4','z-pm5','z-bp','z-bp2','z-bp3','z-bp4','z-bp5'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.textContent=lbl;
   });
+  // Card subtitles: "FY26 vs FY27" when FY27 shown, "FY26" when FY26-only
+  const fyTxt=showFY27()?'FY26 vs FY27':'FY26';
+  document.querySelectorAll('.card-fy').forEach(e=>{ e.textContent=(e.dataset.pre||'')+fyTxt; });
 }
 function updateCmpBanners() {
   const on = cmp!=='off';
@@ -1438,9 +1451,8 @@ function render() {
 // ═══════════════════════════════════
 function setZoom(z) {
   zoom=z;
-  document.querySelectorAll('.pill-group .pill').forEach(b=>{
-    if(b.textContent==='FY26–27'||b.textContent==='FY25–29')
-      b.classList.toggle('on', b.textContent===(z==='fy2627'?'FY26–27':'FY25–29'));
+  document.querySelectorAll('.pill-group .pill[data-zoom]').forEach(b=>{
+    b.classList.toggle('on', b.dataset.zoom===z);
   });
   render();
 }
