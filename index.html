@@ -1218,7 +1218,7 @@ function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOver
   const gArr27=(k,bps)=>{const a=src[k]&&src[k].fy27;if(!a)return null;return isMon?[...a]:(bps?avgQ(a):sumQ(a));};
   const gAnn=(fy,k,bps)=>{const a=src[k]&&src[k][fy];if(!a)return null;return bps?a.reduce((x,y)=>x+y,0)/a.length:a.reduce((x,y)=>x+y,0);};
 
-  let html=`<div class="tbl-wrap" style="border-radius:0 0 8px 8px;overflow:hidden;"><table class="st"><thead><tr>`;
+  let html=`<div class="tbl-wrap" style="border-radius:0 0 8px 8px;overflow-x:auto;overflow-y:hidden;"><table class="st"><thead><tr>`;
   hdrs.forEach((h,i)=>{
     let cls='',lbl=h;
     if(i>=1&&i<=n26){cls=clsPrefix+'26';if(isFcst('fy26',i-1)){cls+=' hfcst';if(isMon)lbl+='*';}}
