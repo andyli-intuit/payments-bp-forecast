@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Payments + Bill Pay Losses and COGS — Target Pass 3</title>
+<title>Losses and COGS dashboard — Target Pass 3</title>
 <style>
 :root{
   --navy:#0D1B3E;--navy2:#132552;--green-acc:#2ECC71;
@@ -163,34 +163,15 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
   <div class="topnav-left">
     <span class="brand">INTUIT</span>
     <span style="color:rgba(255,255,255,.18)">|</span>
-    <span class="nav-titlewrap"><span class="nav-title">Payments + Bill Pay Losses and COGS</span><span class="nav-sub">Target Pass 3</span></span>
+    <span class="nav-titlewrap"><span class="nav-title">Losses and COGS dashboard</span><span class="nav-sub">Target Pass 3</span></span>
   </div>
   <div class="topnav-right">
-    <div class="ctrl">
-      <div class="ctrl-lbl">Zoom</div>
-      <div class="pill-group">
-        <button class="pill" data-zoom="fy26" onclick="setZoom('fy26')">FY26</button>
-        <button class="pill on" data-zoom="fy2627" onclick="setZoom('fy2627')">FY26–27</button>
-        <button class="pill" data-zoom="fy2529" onclick="setZoom('fy2529')">FY25–29</button>
-      </div>
-    </div>
     <div class="ctrl">
       <div class="ctrl-lbl">Period</div>
       <div class="pill-group" id="pg-period">
         <button class="pill on" onclick="setPeriod('monthly')">Monthly</button>
         <button class="pill" onclick="setPeriod('quarterly')">Quarterly</button>
       </div>
-    </div>
-    <div class="ctrl">
-      <div class="ctrl-lbl">Compare</div>
-      <select class="cmp-sel" id="cmp-sel" onchange="toggleCmp()">
-        <option value="off">Off</option>
-        <option value="tp2rg">TP2.5 Risk Goal</option>
-        <option value="tp2mlr">TP2.5 Most Likely Risk</option>
-        <option value="ce0605">Current Estimate (2026.06.05)</option>
-        <option value="mfp2">May Pass 2 Load</option>
-        <option value="ra">MFP2 Risk Adj.</option>
-      </select>
     </div>
   </div>
 </nav>
@@ -199,6 +180,8 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
   <button class="tab on" onclick="setTab('ov')">Overview</button>
   <button class="tab" onclick="setTab('pm')">Payments</button>
   <button class="tab" onclick="setTab('bp')">Bill Pay</button>
+  <button class="tab" onclick="setTab('pr')">All Payroll</button>
+  <button class="tab" onclick="setTab('ol')">OL Payroll</button>
   <button class="tab" onclick="setTab('tbl')">Summary Table</button>
 </nav>
 
@@ -265,6 +248,15 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
       <span class="zpill" id="z-pm">FY26–27</span>
     </div>
     <div class="card-body">
+      <div class="ytd" id="ytd-block-pm">
+        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-pm" min="1" max="12" value="12" oninput="productYtd('pm',this.value)">
+          <div class="ytd-chip" id="ytd-chip-pm">Jul-26</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-pm"></div>
+      </div>
       <div id="pm-metrics"></div>
       <div class="cmp-banner" id="cmp-pm" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
@@ -305,6 +297,15 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
       <span class="zpill" id="z-bp">FY26–27</span>
     </div>
     <div class="card-body">
+      <div class="ytd" id="ytd-block-bp">
+        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-bp" min="1" max="12" value="12" oninput="productYtd('bp',this.value)">
+          <div class="ytd-chip" id="ytd-chip-bp">Jul-26</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-bp"></div>
+      </div>
       <div id="bp-metrics"></div>
       <div class="cmp-banner" id="cmp-bp" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
@@ -331,6 +332,104 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
           <div class="ch-sub">bps of TPV</div>
           <div class="leg" id="leg-bcogsr"></div>
           <div class="ch-wrap"><canvas id="c-bcogsr"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYROLL (combined OL + DT) -->
+<div id="sec-pr" class="sec">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <span class="zpill" id="z-pr">FY26–27</span>
+    </div>
+    <div class="card-body">
+      <div class="ytd" id="ytd-block-pr">
+        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-pr" min="1" max="12" value="12" oninput="productYtd('pr',this.value)">
+          <div class="ytd-chip" id="ytd-chip-pr">Jul-26</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-pr"></div>
+      </div>
+      <div id="pr-metrics"></div>
+      <div class="cmp-banner" id="cmp-pr" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="ch-grid" style="margin-top:14px">
+        <div class="ch-card">
+          <div class="ch-title">Net Losses <span class="zpill" id="z-pr2">FY26–27</span></div>
+          <div class="ch-sub">$M · OL + DT combined</div>
+          <div class="leg" id="leg-prnl"></div>
+          <div class="ch-wrap"><canvas id="c-prnl"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-pr3">FY26–27</span></div>
+          <div class="ch-sub">bps of volume</div>
+          <div class="leg" id="leg-prnlr"></div>
+          <div class="ch-wrap"><canvas id="c-prnlr"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">COGS <span class="zpill" id="z-pr4">FY26–27</span></div>
+          <div class="ch-sub">$M · OL + DT combined</div>
+          <div class="leg" id="leg-prcogs"></div>
+          <div class="ch-wrap"><canvas id="c-prcogs"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">COGS Rate <span class="zpill" id="z-pr5">FY26–27</span></div>
+          <div class="ch-sub">bps of volume</div>
+          <div class="leg" id="leg-prcogsr"></div>
+          <div class="ch-wrap"><canvas id="c-prcogsr"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OL PAYROLL (Online only) -->
+<div id="sec-ol" class="sec">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">OL Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <span class="zpill" id="z-ol">FY26–27</span>
+    </div>
+    <div class="card-body">
+      <div class="ytd" id="ytd-block-ol">
+        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-ol" min="1" max="12" value="12" oninput="productYtd('ol',this.value)">
+          <div class="ytd-chip" id="ytd-chip-ol">Jul-26</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-ol"></div>
+      </div>
+      <div id="ol-metrics"></div>
+      <div class="cmp-banner" id="cmp-ol" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="ch-grid" style="margin-top:14px">
+        <div class="ch-card">
+          <div class="ch-title">Net Losses <span class="zpill" id="z-ol2">FY26–27</span></div>
+          <div class="ch-sub">$M · Online Payroll</div>
+          <div class="leg" id="leg-olnl"></div>
+          <div class="ch-wrap"><canvas id="c-olnl"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-ol3">FY26–27</span></div>
+          <div class="ch-sub">bps of volume</div>
+          <div class="leg" id="leg-olnlr"></div>
+          <div class="ch-wrap"><canvas id="c-olnlr"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">COGS <span class="zpill" id="z-ol4">FY26–27</span></div>
+          <div class="ch-sub">$M · Online Payroll</div>
+          <div class="leg" id="leg-olcogs"></div>
+          <div class="ch-wrap"><canvas id="c-olcogs"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">COGS Rate <span class="zpill" id="z-ol5">FY26–27</span></div>
+          <div class="ch-sub">bps of volume</div>
+          <div class="leg" id="leg-olcogsr"></div>
+          <div class="ch-wrap"><canvas id="c-olcogsr"></canvas></div>
         </div>
       </div>
     </div>
@@ -399,6 +498,20 @@ const TP2={
   bcogsr:{ fy25:[32.7,16.5,8.4,7.7,7.1,4.9,20.5,20.1,3.4,2.7,-3.3,5.0], fy26:[4.4,6.5,4.6,8.2,8.8,6.8,6.8,10.7,15.4,6.3,7.6,8.2], fy27:[8.0,8.1,8.2,8.2,8.2,8.4,8.6,8.8,8.9,8.9,9.1,9.3], fy28:[9.5,9.6,9.7,9.8,9.8,9.9,10.0,10.0,10.0,10.1,10.1,10.2], fy29:[10.4,10.4,10.3,10.2,10.1,10.0,10.0,9.9,9.8,9.8,9.8,9.7] },
   combined_rate:{ fy25:[9.3,7.2,7.1,6.7,6.4,8.5,14.3,9.6,4.8,6.9,5.1,9.6], fy26:[8.4,8.8,7.8,9.7,12.1,10.0,8.5,11.0,11.5,9.3,10.3,10.2], fy27:[9.3,9.3,9.3,9.0,9.0,8.9,8.7,8.8,8.7,8.5,8.5,8.5], fy28:[8.8,8.7,8.7,8.7,8.7,8.7,8.7,8.7,8.6,8.6,8.6,8.6], fy29:[8.7,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.5,8.5,8.5,8.5] },
   tcogs:{ fy25:[17.1,12.7,13.9,12.1,12.1,14.1,23.6,19.0,10.7,14.5,10.9,20.0], fy26:[17.4,18.9,18.0,18.8,26.4,19.2,17.2,26.1,28.1,23.1,26.6,26.2], fy27:[24.2,25.0,26.1,24.0,25.8,23.7,24.4,29.0,29.1,29.2,30.7,30.6], fy28:[28.9,29.7,31.1,29.9,32.1,29.8,31.4,36.4,36.6,38.1,39.6,39.8], fy29:[34.6,35.4,37.2,35.3,37.9,35.4,36.6,42.4,43.0,44.3,45.8,46.1] },
+  // Payroll (combined OL+DT) — Model tab, 1. Payroll_COGS_Model_TP3_v7 (LOAD).xlsx
+  // prtpv=Total Volumes r81 (/1e9); prnl=Total Net Losses r28 (/1e6); prnlr=Net Loss Rate r29 (direct);
+  // prcogs=Total OL+DT COGS r54 (/1e6); prcogsr=computed (prcogs_$M / prtpv_$B)*10
+  prtpv:{ fy25:[25.9,23.9,28.9,25.2,29.8,27.2,25.5,26.6,29.3,29.9,28.1,32.3], fy26:[29.0,28.9,32.8,28.0,35.6,27.0,27.0,28.1,32.3,29.4,30.9,33.8], fy27:[30.3,30.6,33.8,30.8,37.6,28.1,28.8,30.8,34.3,30.8,32.8,33.8], fy28:[33.3,32.6,34.4,33.9,38.8,31.0,32.1,32.6,34.5,34.9,34.9,36.0], fy29:[34.4,35.0,36.9,36.5,40.9,33.4,35.2,33.1,37.8,36.1,36.7,37.9] },
+  prnl:{ fy25:[2.0,2.1,2.7,1.4,3.1,4.5,4.0,0.7,4.1,1.2,2.3,1.4], fy26:[1.3,3.6,5.7,4.1,6.1,12.2,3.2,2.8,3.7,0.2,6.0,4.9], fy27:[3.8,3.9,4.5,4.0,4.9,3.8,4.0,4.3,4.9,4.3,4.5,4.8], fy28:[4.5,4.4,4.6,4.5,5.2,4.3,4.3,4.4,4.7,4.8,4.7,4.8], fy29:[4.7,4.8,5.0,4.9,5.5,4.6,4.8,4.6,5.2,5.0,5.0,5.2] },
+  prnlr:{ fy25:[0.8,0.9,0.9,0.6,1.1,1.6,1.6,0.2,1.4,0.4,0.8,0.4], fy26:[0.5,1.2,1.7,1.5,1.7,4.5,1.2,1.0,1.1,0.1,1.9,1.4], fy27:[1.3,1.3,1.3,1.3,1.3,1.3,1.4,1.4,1.4,1.4,1.4,1.4], fy28:[1.3,1.3,1.3,1.3,1.3,1.4,1.3,1.4,1.4,1.4,1.3,1.3], fy29:[1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4] },
+  prcogs:{ fy25:[2.9,2.9,3.3,2.1,4.2,15.8,7.5,1.8,5.8,2.9,3.5,2.5], fy26:[2.9,4.9,7.2,5.3,6.9,19.6,5.8,4.1,4.8,1.4,7.2,6.1], fy27:[5.7,5.5,6.0,5.6,6.6,11.7,7.2,6.3,6.6,5.9,6.3,6.6], fy28:[6.8,6.5,6.7,6.7,7.5,13.6,8.4,7.1,7.0,7.0,7.0,7.2], fy29:[7.4,7.2,7.4,7.5,8.2,15.2,9.5,7.5,7.9,7.4,7.6,7.8] },
+  prcogsr:{ fy25:[1.1,1.2,1.1,0.8,1.4,5.8,2.9,0.7,2.0,1.0,1.2,0.8], fy26:[1.0,1.7,2.2,1.9,1.9,7.3,2.2,1.4,1.5,0.5,2.3,1.8], fy27:[1.9,1.8,1.8,1.8,1.8,4.2,2.5,2.1,1.9,1.9,1.9,2.0], fy28:[2.0,2.0,1.9,2.0,1.9,4.4,2.6,2.2,2.0,2.0,2.0,2.0], fy29:[2.2,2.1,2.0,2.1,2.0,4.5,2.7,2.3,2.1,2.1,2.1,2.1] },
+  // OL Payroll (Online only) — Model tab, same file. oltpv=OL Volumes r79; olnl=OL Net Losses r12; olnlr=Net Loss Rate r13; olcogs=Loaded to OL COGS r55; olcogsr=computed
+  oltpv:{ fy25:[13.9,12.4,15.6,13.9,16.0,16.6,15.0,15.6,16.9,18.6,16.9,19.5], fy26:[17.9,17.6,20.3,17.3,22.1,17.3,17.1,17.5,20.5,19.1,19.6,22.0], fy27:[19.8,20.0,22.3,20.3,24.9,19.2,19.4,20.3,23.3,20.9,22.1,23.0], fy28:[23.0,22.6,23.9,23.6,27.0,22.4,22.8,22.8,24.6,25.0,24.8,25.6], fy29:[24.8,25.2,26.6,26.4,29.6,25.0,25.9,24.2,27.9,26.9,27.2,28.1] },
+  olnl:{ fy25:[1.8,1.7,2.4,1.3,3.0,4.3,3.9,0.9,4.3,1.0,1.7,1.1], fy26:[1.1,3.6,5.2,3.5,5.0,11.5,3.4,2.9,3.6,0.3,6.0,4.5], fy27:[3.5,3.6,4.1,3.7,4.5,3.5,3.8,4.0,4.5,4.0,4.2,4.4], fy28:[4.2,4.1,4.3,4.2,4.8,4.0,4.1,4.1,4.4,4.5,4.4,4.5], fy29:[4.4,4.5,4.7,4.6,5.2,4.4,4.5,4.3,4.9,4.7,4.7,4.9] },
+  olnlr:{ fy25:[1.3,1.4,1.5,1.0,1.9,2.6,2.6,0.6,2.5,0.5,1.0,0.6], fy26:[0.6,2.0,2.6,2.0,2.3,6.7,2.0,1.7,1.7,0.1,3.1,2.0], fy27:[1.8,1.8,1.9,1.8,1.8,1.8,1.9,2.0,1.9,1.9,1.9,1.9], fy28:[1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8], fy29:[1.8,1.8,1.8,1.8,1.8,1.8,1.7,1.8,1.8,1.8,1.7,1.7] },
+  olcogs:{ fy25:[2.3,2.1,2.8,1.8,3.6,15.1,7.0,1.6,5.7,1.9,2.6,2.0], fy26:[2.4,4.6,6.5,4.5,5.7,18.5,5.8,3.9,4.5,1.2,6.9,5.4], fy27:[5.1,4.9,5.4,5.0,5.9,11.2,6.7,5.7,6.0,5.3,5.7,6.0], fy28:[6.2,5.9,6.1,6.1,6.8,13.1,7.8,6.5,6.4,6.4,6.4,6.6], fy29:[6.8,6.6,6.8,6.9,7.5,14.6,8.9,6.9,7.2,6.8,7.0,7.2] },
+  olcogsr:{ fy25:[1.7,1.7,1.8,1.3,2.3,9.1,4.6,1.0,3.4,1.0,1.6,1.0], fy26:[1.3,2.6,3.2,2.6,2.6,10.7,3.4,2.2,2.2,0.6,3.5,2.5], fy27:[2.6,2.5,2.4,2.5,2.4,5.8,3.4,2.8,2.6,2.5,2.6,2.6], fy28:[2.7,2.6,2.5,2.6,2.5,5.8,3.4,2.8,2.6,2.5,2.6,2.6], fy29:[2.8,2.6,2.5,2.6,2.5,5.8,3.4,2.8,2.6,2.5,2.6,2.6] },
 };
 
 // Target Pass 2.5 - Risk Goal (Target Pass 2 (Most Likely Risk) tab, Payments COGS Model_TP2_v6 (LOAD Target 2.5).xlsx)
@@ -668,6 +781,14 @@ const FY25={
   bcogsr:TP2.bcogsr.fy25.reduce((a,b)=>a+b,0)/12,
   combined_rate:TP2.combined_rate.fy25.reduce((a,b)=>a+b,0)/12,
   tcogs:TP2.tcogs.fy25.reduce((a,b)=>a+(b||0),0),
+  prnl:TP2.prnl.fy25.reduce((a,b)=>a+b,0),
+  prnlr:TP2.prnlr.fy25.reduce((a,b)=>a+b,0)/12,
+  prcogs:TP2.prcogs.fy25.reduce((a,b)=>a+b,0),
+  prcogsr:TP2.prcogsr.fy25.reduce((a,b)=>a+b,0)/12,
+  olnl:TP2.olnl.fy25.reduce((a,b)=>a+b,0),
+  olnlr:TP2.olnlr.fy25.reduce((a,b)=>a+b,0)/12,
+  olcogs:TP2.olcogs.fy25.reduce((a,b)=>a+b,0),
+  olcogsr:TP2.olcogsr.fy25.reduce((a,b)=>a+b,0)/12,
 };
 
 // ═══════════════════════════════════
@@ -1156,6 +1277,18 @@ function allMets() {
     {lbl:'Net Loss Rate (avg)',k:'bnlr',cc:'bl',vc:'bl',bps:true},
     {lbl:'COGS Rate (avg)',k:'bcogsr',cc:'bl',vc:'bl',bps:true},
   ]);
+  renderMets('pr-metrics',[
+    {lbl:'Net Losses',k:'prnl',cc:'bl',vc:'bl'},
+    {lbl:'COGS',k:'prcogs',cc:'bl',vc:'bl'},
+    {lbl:'Net Loss Rate (avg)',k:'prnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COGS Rate (avg)',k:'prcogsr',cc:'bl',vc:'bl',bps:true},
+  ]);
+  renderMets('ol-metrics',[
+    {lbl:'Net Losses',k:'olnl',cc:'bl',vc:'bl'},
+    {lbl:'COGS',k:'olcogs',cc:'bl',vc:'bl'},
+    {lbl:'Net Loss Rate (avg)',k:'olnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COGS Rate (avg)',k:'olcogsr',cc:'bl',vc:'bl',bps:true},
+  ]);
 }
 
 // ═══════════════════════════════════
@@ -1192,6 +1325,42 @@ function ytdUpdate(v) {
   ).join('');
 }
 
+// Per-tab YTD tracker. `tab` = the tab/element suffix (pm, bp, pr, ol); each maps to its
+// metric-key prefix. YTD is always FY26 monthly (Aug-25 → selected month), independent of Period.
+const YTD_CFG={
+  pm:{pre:'p',  volLbl:'TPV'},
+  bp:{pre:'b',  volLbl:'TPV'},
+  pr:{pre:'pr', volLbl:'Volume'},
+  ol:{pre:'ol', volLbl:'Volume'},
+};
+function productYtd(tab, v) {
+  const cfg=YTD_CFG[tab]; if(!cfg) return;
+  const pre=cfg.pre;
+  const mo=parseInt(v);
+  const mos=ML.fy26;
+  const chip=document.getElementById('ytd-chip-'+tab); if(chip) chip.textContent=mos[mo-1];
+  const sl=k=>(TP2[k]&&TP2[k].fy26?TP2[k].fy26.slice(0,mo):[]);
+  const sum=k=>sl(k).reduce((a,b)=>a+b,0);
+  const avg=k=>{const a=sl(k);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;};
+  const tpv=sum(pre+'tpv');
+  const nl=Math.max(0,sum(pre+'nl'));
+  const cogs=Math.max(0,sum(pre+'cogs'));
+  const nlr=avg(pre+'nlr');
+  const cogsr=avg(pre+'cogsr');
+  const thru=`Aug-25 → ${mos[mo-1]}`;
+  const kpis=[
+    {l:`${cfg.volLbl} YTD`,v:'$'+tpv.toFixed(1)+'B',s:thru},
+    {l:'Net Losses YTD',v:'$'+nl.toFixed(1)+'M',s:thru},
+    {l:'COGS YTD',v:'$'+cogs.toFixed(1)+'M',s:thru},
+    {l:'Net Loss Rate (avg)',v:nlr.toFixed(1)+' bps',s:'period avg'},
+    {l:'COGS Rate (avg)',v:cogsr.toFixed(1)+' bps',s:'period avg'},
+  ];
+  const grid=document.getElementById('ytd-kpis-'+tab); if(!grid) return;
+  grid.innerHTML=kpis.map(k=>
+    `<div class="ytd-kpi"><div class="ytd-kpi-lbl">${k.l}</div><div class="ytd-kpi-val">${k.v}</div>${k.s?`<div class="ytd-kpi-sub">${k.s}</div>`:''}</div>`
+  ).join('');
+}
+
 // ═══════════════════════════════════
 // SUMMARY TABLE
 // ═══════════════════════════════════
@@ -1208,6 +1377,12 @@ const TBL_ROWS=[
   {l:'Net Loss Rate (bps)',k:'bnlr',bps:true},
   {l:'COGS',k:'bcogs',bps:false},
   {l:'COGS Rate (bps)',k:'bcogsr',bps:true},
+  {sec:'PAYROLL'},
+  {l:'Volume',k:'prtpv',bps:false,gb:true},
+  {l:'Net Losses',k:'prnl',bps:false},
+  {l:'Net Loss Rate (bps)',k:'prnlr',bps:true},
+  {l:'COGS',k:'prcogs',bps:false},
+  {l:'COGS Rate (bps)',k:'prcogsr',bps:true},
 ];
 
 function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOverride) {
@@ -1368,7 +1543,7 @@ function buildTable() {
 // ═══════════════════════════════════
 function updatePills() {
   const lbl=zoom==='fy26'?'FY26':zoom==='fy2627'?'FY26–27':'FY25–29';
-  ['z-ov','z-ov2','z-ov3','z-ov4','z-ov5','z-pm','z-pm2','z-pm3','z-pm4','z-pm5','z-bp','z-bp2','z-bp3','z-bp4','z-bp5'].forEach(id=>{
+  ['z-ov','z-ov2','z-ov3','z-ov4','z-ov5','z-pm','z-pm2','z-pm3','z-pm4','z-pm5','z-bp','z-bp2','z-bp3','z-bp4','z-bp5','z-pr','z-pr2','z-pr3','z-pr4','z-pr5','z-ol','z-ol2','z-ol3','z-ol4','z-ol5'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.textContent=lbl;
   });
   // Card subtitles: "FY26 vs FY27" when FY27 shown, "FY26" when FY26-only
@@ -1378,7 +1553,7 @@ function updatePills() {
 function updateCmpBanners() {
   const on = cmp!=='off';
   const lbl = cmpLabel();
-  ['cmp-ov','cmp-pm','cmp-bp'].forEach(id=>{
+  ['cmp-ov','cmp-pm','cmp-bp','cmp-pr','cmp-ol'].forEach(id=>{
     const e=document.getElementById(id); if(!e) return;
     e.classList.toggle('on', on);
     if(on) e.innerHTML=`&#9432; Comparing: <strong>Target Pass 3</strong> (dark) vs <strong>${lbl}</strong> (light)`;
@@ -1400,16 +1575,32 @@ function render() {
     legLine2('leg-nlrate','Payments','Bill Pay'); draw('c-nlrate','line', lineDs2('pnlr','bnlr','Payments','Bill Pay'), lineOpts());
   }
   if (tab==='pm') {
+    productYtd('pm', document.getElementById('ytd-sl-pm')?.value||12);
     legBar('leg-pnl');    draw('c-pnl',   'bar',  barDs('pnl'),   barOpts(false));
     legLine('leg-pnlr');  draw('c-pnlr',  'line', lineDs('pnlr'), lineOpts());
     legBar('leg-pcogs');  draw('c-pcogs', 'bar',  barDs('pcogs'), barOpts(false));
     legLine('leg-pcogsr');draw('c-pcogsr','line', lineDs('pcogsr'),lineOpts());
   }
   if (tab==='bp') {
+    productYtd('bp', document.getElementById('ytd-sl-bp')?.value||12);
     legBar('leg-bnl');    draw('c-bnl',   'bar',  barDs('bnl'),   barOpts(false));
     legLine('leg-bnlr');  draw('c-bnlr',  'line', lineDs('bnlr'), lineOpts());
     legBar('leg-bcogs');  draw('c-bcogs', 'bar',  barDs('bcogs'), barOpts(false));
     legLine('leg-bcogsr');draw('c-bcogsr','line', lineDs('bcogsr'),lineOpts());
+  }
+  if (tab==='pr') {
+    productYtd('pr', document.getElementById('ytd-sl-pr')?.value||12);
+    legBar('leg-prnl');    draw('c-prnl',   'bar',  barDs('prnl'),   barOpts(false));
+    legLine('leg-prnlr');  draw('c-prnlr',  'line', lineDs('prnlr'), lineOpts());
+    legBar('leg-prcogs');  draw('c-prcogs', 'bar',  barDs('prcogs'), barOpts(false));
+    legLine('leg-prcogsr');draw('c-prcogsr','line', lineDs('prcogsr'),lineOpts());
+  }
+  if (tab==='ol') {
+    productYtd('ol', document.getElementById('ytd-sl-ol')?.value||12);
+    legBar('leg-olnl');    draw('c-olnl',   'bar',  barDs('olnl'),   barOpts(false));
+    legLine('leg-olnlr');  draw('c-olnlr',  'line', lineDs('olnlr'), lineOpts());
+    legBar('leg-olcogs');  draw('c-olcogs', 'bar',  barDs('olcogs'), barOpts(false));
+    legLine('leg-olcogsr');draw('c-olcogsr','line', lineDs('olcogsr'),lineOpts());
   }
 }
 
