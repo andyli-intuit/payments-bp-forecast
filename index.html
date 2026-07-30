@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Losses and COGS dashboard — Target Pass 3</title>
+<title>Losses and COR dashboard — Target Pass 4</title>
 <style>
 :root{
   --navy:#0D1B3E;--navy2:#132552;--green-acc:#2ECC71;
@@ -63,6 +63,13 @@ main{padding:18px 28px 48px;max-width:1500px;margin:0 auto;}
 .ytd-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--navy);cursor:pointer;border:2px solid #fff;}
 .ytd-chip{font-size:12px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--ylw-bd);border-radius:5px;padding:3px 10px;min-width:64px;text-align:center;}
 .ytd-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;}
+.ytd-col{display:flex;flex-direction:column;gap:8px;}
+.ytd-col-ttl{font-size:10px;font-weight:800;color:#795548;text-transform:uppercase;letter-spacing:.6px;padding-left:2px;}
+.ytd-hdr{display:flex;align-items:center;justify-content:space-between;}
+.ytd-hdr .ytd-ttl{margin-bottom:0;}
+.ytd-toggle{background:#fff;border:1px solid var(--ylw-bd);border-radius:5px;color:#795548;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;}
+.ytd.collapsed .ytd-row,.ytd.collapsed .ytd-grid{display:none;}
+.ytd:not(.collapsed) .ytd-hdr{margin-bottom:9px;}
 .ytd-kpi{background:#fff;border:1px solid #E8DFC0;border-radius:7px;padding:9px 13px;}
 .ytd-kpi-lbl{font-size:9px;font-weight:700;color:#8D7B50;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
 .ytd-kpi-val{font-size:18px;font-weight:800;color:var(--navy);}
@@ -132,6 +139,14 @@ table.st{width:100%;border-collapse:collapse;font-size:11px;}
 .st th.hfcst{background:#E65100 !important;color:#fff;}
 .st td{padding:6px 10px;text-align:right;border-bottom:1px solid #F0F2F5;white-space:nowrap;}
 .st td:first-child{text-align:left;color:var(--text2);}
+/* Freeze the metric (first) column during horizontal scroll */
+.st th:first-child{position:sticky;left:0;z-index:3;}
+.st td:first-child{position:sticky;left:0;z-index:2;background:#fff;box-shadow:1px 0 0 var(--border);}
+.st .shd td:first-child{background:var(--navy2);}
+.st .shd .shd-lbl{position:sticky;left:10px;display:inline-block;}
+/* Total summation rows: light-blue band, bold label, keeps delta red/green legible */
+.st .totrow td{background:#E8F0FB;font-weight:700;border-top:1px solid #B3D4EA;border-bottom:1px solid #B3D4EA;}
+.st .totrow td:first-child{background:#E8F0FB;color:var(--navy);}
 .st .shd td{background:var(--navy2);color:#fff;font-weight:700;font-size:10px;text-transform:uppercase;padding:5px 10px;}
 .st .tot{font-weight:700;}
 .st .h26{background:rgba(21,101,192,.04);}.st .h27{background:rgba(191,54,12,.04);}
@@ -163,7 +178,7 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
   <div class="topnav-left">
     <span class="brand">INTUIT</span>
     <span style="color:rgba(255,255,255,.18)">|</span>
-    <span class="nav-titlewrap"><span class="nav-title">Losses and COGS dashboard</span><span class="nav-sub">Target Pass 3</span></span>
+    <span class="nav-titlewrap"><span class="nav-title">Losses and COR dashboard</span><span class="nav-sub">Target Pass 4</span></span>
   </div>
   <div class="topnav-right">
     <div class="ctrl">
@@ -189,8 +204,8 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 
 <!-- OVERVIEW -->
 <div id="sec-ov" class="sec on">
-  <div class="ytd" id="ytd-block">
-    <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+  <div class="ytd collapsed" id="ytd-block">
+    <div class="ytd-hdr"><div class="ytd-ttl">FY26 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block',this)">Show</button></div>
     <div class="ytd-row">
       <div class="ytd-lbl">Through:</div>
       <input type="range" class="ytd-sl" id="ytd-sl" min="1" max="12" value="12" oninput="ytdUpdate(this.value)">
@@ -199,41 +214,51 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
     <div class="ytd-grid" id="ytd-kpis"></div>
   </div>
 
+  <div class="ytd" id="ytd-block-27">
+    <div class="ytd-hdr"><div class="ytd-ttl">FY27 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-27',this)">Hide</button></div>
+    <div class="ytd-row">
+      <div class="ytd-lbl">Through:</div>
+      <input type="range" class="ytd-sl" id="ytd-sl-27" min="1" max="12" value="12" oninput="ytd27Update(this.value)">
+      <div class="ytd-chip" id="ytd-chip-27">Jul-27</div>
+    </div>
+    <div class="ytd-grid" id="ytd-kpis-27"></div>
+  </div>
+
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Annual Forecast Summary</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Annual Forecast Summary</div><div class="card-meta card-fy" data-pre="Target Pass 4 · ">Target Pass 4 · FY26 vs FY27</div></div></div>
     </div>
     <div class="card-body"><div id="ov-metrics"></div></div>
   </div>
 
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Loss Outlook</div><div class="card-meta">Net losses ($M) · Rates (bps of TPV)</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payments + Bill Pay Loss Metrics</div><div class="card-meta">Losses ($M) · Rates (bps of TPV)</div></div></div>
       <span class="zpill" id="z-ov">FY26–27</span>
     </div>
     <div class="card-body">
-      <div class="cmp-banner" id="cmp-ov">&#9432; Comparing: <strong>Target Pass 3</strong> (dark) vs <strong>May Pass 2</strong> (light)</div>
+      <div class="cmp-banner" id="cmp-ov">&#9432; Comparing: <strong>Target Pass 4</strong> (dark) vs <strong>May Pass 2</strong> (light)</div>
       <div class="ch-grid">
         <div class="ch-card">
-          <div class="ch-title">Total Net Losses <span class="zpill" id="z-ov2">FY26–27</span></div>
+          <div class="ch-title">Total Losses <span class="zpill" id="z-ov2">FY26–27</span></div>
           <div class="ch-sub">$M · Payments + Bill Pay combined</div>
           <div class="leg" id="leg-tnl"></div>
           <div class="ch-wrap"><canvas id="c-tnl"></canvas></div>
-          <div class="ch-src">Source: Payments COGS Model_TP3_v5.2 (FY27 BP 4.5 bps goal only) · Model tab</div>
+          <div class="ch-src">Source: Payments COGS Model_TP4_v11 (FY27 Target) · Model tab</div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">Total COGS <span class="zpill" id="z-ov3">FY26–27</span></div>
+          <div class="ch-title">Total COR <span class="zpill" id="z-ov3">FY26–27</span></div>
           <div class="ch-sub">$M · inc. Bill Pay & Banking (Model row 85)</div>
           <div class="leg" id="leg-tcogs"></div>
           <div class="ch-wrap"><canvas id="c-tcogs"></canvas></div>
-          <div class="ch-src">Source: Payments COGS Model_TP3_v5.2 (FY27 BP 4.5 bps goal only) · Model tab</div>
+          <div class="ch-src">Source: Payments COGS Model_TP4_v11 (FY27 Target) · Model tab</div>
         </div>
         <div class="ch-card" style="grid-column:1/-1">
-          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-ov4">FY26–27</span></div>
+          <div class="ch-title">Loss Rate <span class="zpill" id="z-ov4">FY26–27</span></div>
           <div class="ch-sub">bps of TPV · Payments vs Bill Pay</div>
           <div class="leg" id="leg-nlrate"></div>
           <div class="ch-wrap"><canvas id="c-nlrate"></canvas></div>
-          <div class="ch-src">Source: Payments COGS Model_TP3_v5.2 (FY27 BP 4.5 bps goal only) · Model tab</div>
+          <div class="ch-src">Source: Payments COGS Model_TP4_v11 (FY27 Target) · Model tab</div>
         </div>
       </div>
     </div>
@@ -244,12 +269,12 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-pm" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payments</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payments</div><div class="card-meta card-fy" data-pre="Target Pass 4 · ">Target Pass 4 · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-pm">FY26–27</span>
     </div>
     <div class="card-body">
-      <div class="ytd" id="ytd-block-pm">
-        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+      <div class="ytd collapsed" id="ytd-block-pm">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY26 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-pm',this)">Show</button></div>
         <div class="ytd-row">
           <div class="ytd-lbl">Through:</div>
           <input type="range" class="ytd-sl" id="ytd-sl-pm" min="1" max="12" value="12" oninput="productYtd('pm',this.value)">
@@ -257,29 +282,38 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
         </div>
         <div class="ytd-grid" id="ytd-kpis-pm"></div>
       </div>
+      <div class="ytd" id="ytd-block-pm27" style="margin-top:12px">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY27 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-pm27',this)">Hide</button></div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-pm27" min="1" max="12" value="12" oninput="productYtd('pm',this.value,'fy27')">
+          <div class="ytd-chip" id="ytd-chip-pm27">Jul-27</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-pm27"></div>
+      </div>
       <div id="pm-metrics"></div>
-      <div class="cmp-banner" id="cmp-pm" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="cmp-banner" id="cmp-pm" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 4</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
         <div class="ch-card">
-          <div class="ch-title">Net Losses <span class="zpill" id="z-pm2">FY26–27</span></div>
+          <div class="ch-title">Losses <span class="zpill" id="z-pm2">FY26–27</span></div>
           <div class="ch-sub">$M</div>
           <div class="leg" id="leg-pnl"></div>
           <div class="ch-wrap"><canvas id="c-pnl"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-pm3">FY26–27</span></div>
+          <div class="ch-title">Loss Rate <span class="zpill" id="z-pm3">FY26–27</span></div>
           <div class="ch-sub">bps of TPV</div>
           <div class="leg" id="leg-pnlr"></div>
           <div class="ch-wrap"><canvas id="c-pnlr"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS <span class="zpill" id="z-pm4">FY26–27</span></div>
+          <div class="ch-title">COR <span class="zpill" id="z-pm4">FY26–27</span></div>
           <div class="ch-sub">$M</div>
           <div class="leg" id="leg-pcogs"></div>
           <div class="ch-wrap"><canvas id="c-pcogs"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS Rate <span class="zpill" id="z-pm5">FY26–27</span></div>
+          <div class="ch-title">COR Rate <span class="zpill" id="z-pm5">FY26–27</span></div>
           <div class="ch-sub">bps of TPV</div>
           <div class="leg" id="leg-pcogsr"></div>
           <div class="ch-wrap"><canvas id="c-pcogsr"></canvas></div>
@@ -293,12 +327,12 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-bp" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Bill Pay</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Bill Pay</div><div class="card-meta card-fy" data-pre="Target Pass 4 · ">Target Pass 4 · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-bp">FY26–27</span>
     </div>
     <div class="card-body">
-      <div class="ytd" id="ytd-block-bp">
-        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+      <div class="ytd collapsed" id="ytd-block-bp">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY26 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-bp',this)">Show</button></div>
         <div class="ytd-row">
           <div class="ytd-lbl">Through:</div>
           <input type="range" class="ytd-sl" id="ytd-sl-bp" min="1" max="12" value="12" oninput="productYtd('bp',this.value)">
@@ -306,29 +340,38 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
         </div>
         <div class="ytd-grid" id="ytd-kpis-bp"></div>
       </div>
+      <div class="ytd" id="ytd-block-bp27" style="margin-top:12px">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY27 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-bp27',this)">Hide</button></div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-bp27" min="1" max="12" value="12" oninput="productYtd('bp',this.value,'fy27')">
+          <div class="ytd-chip" id="ytd-chip-bp27">Jul-27</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-bp27"></div>
+      </div>
       <div id="bp-metrics"></div>
-      <div class="cmp-banner" id="cmp-bp" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="cmp-banner" id="cmp-bp" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 4</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
         <div class="ch-card">
-          <div class="ch-title">Net Losses <span class="zpill" id="z-bp2">FY26–27</span></div>
+          <div class="ch-title">Losses <span class="zpill" id="z-bp2">FY26–27</span></div>
           <div class="ch-sub">$M</div>
           <div class="leg" id="leg-bnl"></div>
           <div class="ch-wrap"><canvas id="c-bnl"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-bp3">FY26–27</span></div>
+          <div class="ch-title">Loss Rate <span class="zpill" id="z-bp3">FY26–27</span></div>
           <div class="ch-sub">bps of TPV</div>
           <div class="leg" id="leg-bnlr"></div>
           <div class="ch-wrap"><canvas id="c-bnlr"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS <span class="zpill" id="z-bp4">FY26–27</span></div>
+          <div class="ch-title">COR <span class="zpill" id="z-bp4">FY26–27</span></div>
           <div class="ch-sub">$M</div>
           <div class="leg" id="leg-bcogs"></div>
           <div class="ch-wrap"><canvas id="c-bcogs"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS Rate <span class="zpill" id="z-bp5">FY26–27</span></div>
+          <div class="ch-title">COR Rate <span class="zpill" id="z-bp5">FY26–27</span></div>
           <div class="ch-sub">bps of TPV</div>
           <div class="leg" id="leg-bcogsr"></div>
           <div class="ch-wrap"><canvas id="c-bcogsr"></canvas></div>
@@ -342,12 +385,12 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-pr" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 4 · ">Target Pass 4 · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-pr">FY26–27</span>
     </div>
     <div class="card-body">
-      <div class="ytd" id="ytd-block-pr">
-        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+      <div class="ytd collapsed" id="ytd-block-pr">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY26 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-pr',this)">Show</button></div>
         <div class="ytd-row">
           <div class="ytd-lbl">Through:</div>
           <input type="range" class="ytd-sl" id="ytd-sl-pr" min="1" max="12" value="12" oninput="productYtd('pr',this.value)">
@@ -355,29 +398,38 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
         </div>
         <div class="ytd-grid" id="ytd-kpis-pr"></div>
       </div>
+      <div class="ytd" id="ytd-block-pr27" style="margin-top:12px">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY27 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-pr27',this)">Hide</button></div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-pr27" min="1" max="12" value="12" oninput="productYtd('pr',this.value,'fy27')">
+          <div class="ytd-chip" id="ytd-chip-pr27">Jul-27</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-pr27"></div>
+      </div>
       <div id="pr-metrics"></div>
-      <div class="cmp-banner" id="cmp-pr" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="cmp-banner" id="cmp-pr" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 4</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
         <div class="ch-card">
-          <div class="ch-title">Net Losses <span class="zpill" id="z-pr2">FY26–27</span></div>
+          <div class="ch-title">Losses <span class="zpill" id="z-pr2">FY26–27</span></div>
           <div class="ch-sub">$M · OL + DT combined</div>
           <div class="leg" id="leg-prnl"></div>
           <div class="ch-wrap"><canvas id="c-prnl"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-pr3">FY26–27</span></div>
+          <div class="ch-title">Loss Rate <span class="zpill" id="z-pr3">FY26–27</span></div>
           <div class="ch-sub">bps of volume</div>
           <div class="leg" id="leg-prnlr"></div>
           <div class="ch-wrap"><canvas id="c-prnlr"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS <span class="zpill" id="z-pr4">FY26–27</span></div>
+          <div class="ch-title">COR <span class="zpill" id="z-pr4">FY26–27</span></div>
           <div class="ch-sub">$M · OL + DT combined</div>
           <div class="leg" id="leg-prcogs"></div>
           <div class="ch-wrap"><canvas id="c-prcogs"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS Rate <span class="zpill" id="z-pr5">FY26–27</span></div>
+          <div class="ch-title">COR Rate <span class="zpill" id="z-pr5">FY26–27</span></div>
           <div class="ch-sub">bps of volume</div>
           <div class="leg" id="leg-prcogsr"></div>
           <div class="ch-wrap"><canvas id="c-prcogsr"></canvas></div>
@@ -391,12 +443,12 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 <div id="sec-ol" class="sec">
   <div class="card">
     <div class="card-hdr">
-      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">OL Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 3 · ">Target Pass 3 · FY26 vs FY27</div></div></div>
+      <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">OL Payroll</div><div class="card-meta card-fy" data-pre="Target Pass 4 · ">Target Pass 4 · FY26 vs FY27</div></div></div>
       <span class="zpill" id="z-ol">FY26–27</span>
     </div>
     <div class="card-body">
-      <div class="ytd" id="ytd-block-ol">
-        <div class="ytd-ttl">FY26 Year-to-Date Tracker</div>
+      <div class="ytd collapsed" id="ytd-block-ol">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY26 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-ol',this)">Show</button></div>
         <div class="ytd-row">
           <div class="ytd-lbl">Through:</div>
           <input type="range" class="ytd-sl" id="ytd-sl-ol" min="1" max="12" value="12" oninput="productYtd('ol',this.value)">
@@ -404,32 +456,53 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
         </div>
         <div class="ytd-grid" id="ytd-kpis-ol"></div>
       </div>
+      <div class="ytd" id="ytd-block-ol27" style="margin-top:12px">
+        <div class="ytd-hdr"><div class="ytd-ttl">FY27 Year-to-Date Tracker</div><button class="ytd-toggle" onclick="toggleYtd('ytd-block-ol27',this)">Hide</button></div>
+        <div class="ytd-row">
+          <div class="ytd-lbl">Through:</div>
+          <input type="range" class="ytd-sl" id="ytd-sl-ol27" min="1" max="12" value="12" oninput="productYtd('ol',this.value,'fy27')">
+          <div class="ytd-chip" id="ytd-chip-ol27">Jul-27</div>
+        </div>
+        <div class="ytd-grid" id="ytd-kpis-ol27"></div>
+      </div>
       <div id="ol-metrics"></div>
-      <div class="cmp-banner" id="cmp-ol" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 3</strong> vs <strong>May Pass 2</strong></div>
+      <div class="cmp-banner" id="cmp-ol" style="margin-top:12px">&#9432; Comparing: <strong>Target Pass 4</strong> vs <strong>May Pass 2</strong></div>
       <div class="ch-grid" style="margin-top:14px">
         <div class="ch-card">
-          <div class="ch-title">Net Losses <span class="zpill" id="z-ol2">FY26–27</span></div>
+          <div class="ch-title">Losses <span class="zpill" id="z-ol2">FY26–27</span></div>
           <div class="ch-sub">$M · Online Payroll</div>
           <div class="leg" id="leg-olnl"></div>
           <div class="ch-wrap"><canvas id="c-olnl"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">Net Loss Rate <span class="zpill" id="z-ol3">FY26–27</span></div>
+          <div class="ch-title">Loss Rate <span class="zpill" id="z-ol3">FY26–27</span></div>
           <div class="ch-sub">bps of volume</div>
           <div class="leg" id="leg-olnlr"></div>
           <div class="ch-wrap"><canvas id="c-olnlr"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS <span class="zpill" id="z-ol4">FY26–27</span></div>
+          <div class="ch-title">COR <span class="zpill" id="z-ol4">FY26–27</span></div>
           <div class="ch-sub">$M · Online Payroll</div>
           <div class="leg" id="leg-olcogs"></div>
           <div class="ch-wrap"><canvas id="c-olcogs"></canvas></div>
         </div>
         <div class="ch-card">
-          <div class="ch-title">COGS Rate <span class="zpill" id="z-ol5">FY26–27</span></div>
+          <div class="ch-title">COR Rate <span class="zpill" id="z-ol5">FY26–27</span></div>
           <div class="ch-sub">bps of volume</div>
           <div class="leg" id="leg-olcogsr"></div>
           <div class="ch-wrap"><canvas id="c-olcogsr"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">Recoveries <span class="zpill" id="z-ol6">FY26–27</span></div>
+          <div class="ch-sub">$M · Online Payroll</div>
+          <div class="leg" id="leg-olrec"></div>
+          <div class="ch-wrap"><canvas id="c-olrec"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-title">Recovery Rate <span class="zpill" id="z-ol7">FY26–27</span></div>
+          <div class="ch-sub">% of write-offs</div>
+          <div class="leg" id="leg-olrecr"></div>
+          <div class="ch-wrap"><canvas id="c-olrecr"></canvas></div>
         </div>
       </div>
     </div>
@@ -441,6 +514,14 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
   <div class="card">
     <div class="card-hdr">
       <div class="card-hdr-l"><div class="acc"></div><div><div class="card-title">Summary Table</div><div class="card-meta" id="tbl-meta">Monthly</div></div></div>
+      <div class="ctrl">
+        <div class="ctrl-lbl">Fiscal Years</div>
+        <div class="pill-group" id="pg-tblfy">
+          <button class="pill" data-tblfy="fy26" onclick="setTblFy('fy26')">FY26</button>
+          <button class="pill" data-tblfy="fy27" onclick="setTblFy('fy27')">FY27</button>
+          <button class="pill on" data-tblfy="both" onclick="setTblFy('both')">Both</button>
+        </div>
+      </div>
     </div>
     <div class="card-body">
       <div id="tbl-body"></div>
@@ -449,11 +530,6 @@ footer{border-top:1px solid var(--border);padding:12px 28px;display:flex;align-i
 </div>
 
 </main>
-
-<footer>
-  <span>Payments COGS Model_TP3_v5.2 (FY27 BP 4.5 bps goal only) · Model tab · As of 6/2025</span>
-  <span class="fbadge">TARGET PASS 2 — CONFIDENTIAL</span>
-</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -476,42 +552,85 @@ const QL={
   fy29:['Q1 FY29','Q2 FY29','Q3 FY29','Q4 FY29'],
 };
 
-// FY25: idx 0-8 actuals, 9-11 forecast. FY26: monthly idx 10+ (Jun-26) = forecast (May-26 now actual); quarterly idx 3 (Q4) = forecast
-const ACT25=9, DASH26=10;
+// FY25: idx 0-8 actuals, 9-11 forecast. FY26: monthly idx 11+ (Jul-26) = forecast (Jun-26 now actual); quarterly idx 3 (Q4) = forecast (Jul still fcst)
+const ACT25=9, DASH26=11;
 const isFcst=(fy,i)=>{
   if(fy==='fy25') return i>=ACT25;
   if(fy==='fy26') return period==='monthly' ? i>=DASH26 : i>=3; // Q4 FY26 = forecast
   return true;
 };
 
-// Target Pass 3 — Model tab, Payments COGS Model_TP3_v11 (LOAD).xlsx
+// Target Pass 4 (DEFAULT VIEW; const named TP2 for legacy reasons)
+// Payments+Bill Pay — Model tab, Payments COGS Model_TP4_v11 (FY27 Target).xlsx (TP4 layout: date row 4; ptpv r64, btpv r69, pnl r26, pnlr r27, pcogs r82, bnl r36, bnlr r37, bcogs r83, tcogs r85, combined r87)
 const TP2={
-  ptpv:{ fy25:[14.9,14.3,15.8,13.8,14.2,14.0,13.6,15.7,16.5,16.5,16.2,16.9], fy26:[16.4,16.8,17.9,15.2,16.7,15.3,15.2,18.0,18.9,18.4,19.4,19.4], fy27:[18.9,19.4,20.3,18.9,20.0,18.3,19.1,23.0,22.9,23.1,24.3,23.8], fy28:[21.0,21.5,22.3,21.1,22.2,20.3,21.3,25.4,25.2,26.0,27.0,26.2], fy29:[23.4,23.9,24.9,23.5,24.6,22.7,23.6,28.4,28.1,28.9,30.1,29.5] },
-  btpv:{ fy25:[1.8,1.8,2.0,2.0,2.3,2.0,2.2,2.5,2.8,2.9,3.1,3.1], fy26:[3.4,3.6,4.0,3.6,4.7,3.8,3.9,4.8,5.1,5.2,5.4,5.7], fy27:[5.9,6.2,6.7,6.4,7.3,6.9,7.2,8.0,8.5,8.8,9.1,9.7], fy28:[8.9,9.2,10.0,9.6,10.9,10.4,10.7,12.0,12.7,13.2,13.7,14.5], fy29:[11.6,12.0,13.0,12.5,14.2,13.5,13.9,15.6,16.5,17.1,17.8,18.8] },
-  pnl:{ fy25:[10.0,8.8,11.1,9.3,9.1,12.9,18.2,12.6,8.7,12.8,11.0,17.8], fy26:[15.2,15.8,15.4,15.4,21.9,16.9,14.1,20.5,20.1,18.9,22.0,21.3], fy27:[18.9,19.4,20.2,18.2,19.2,17.5,17.7,21.3,21.2,20.8,21.8,21.4], fy28:[19.7,20.1,20.9,19.8,20.7,19.1,20.0,23.7,23.4,24.1,25.0,24.4], fy29:[21.8,22.3,23.1,21.9,22.9,21.2,22.0,26.2,26.0,26.8,27.8,27.3] },
-  pnlr:{ fy25:[6.7,6.2,7.0,6.7,6.4,9.2,13.4,8.0,5.3,7.7,6.8,10.5], fy26:[9.3,9.4,8.6,10.2,13.2,11.0,9.3,11.4,10.6,10.2,11.3,11.0], fy27:[10.0,10.0,10.0,9.6,9.6,9.6,9.3,9.3,9.3,9.0,9.0,9.0], fy28:[9.4,9.4,9.4,9.4,9.4,9.4,9.4,9.3,9.3,9.3,9.3,9.3], fy29:[9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.2,9.2,9.2] },
-  pcogs:{ fy25:[10.9,9.5,12.1,10.2,10.2,13.0,18.9,13.9,9.6,13.6,11.7,18.3], fy26:[15.7,16.4,16.2,15.5,22.1,16.4,14.3,20.6,20.0,19.5,22.2,21.3], fy27:[19.2,19.7,20.3,18.4,19.5,17.5,17.9,21.6,21.2,21.0,22.1,21.4], fy28:[20.0,20.5,21.0,20.1,21.0,19.2,20.3,24.0,23.5,24.4,25.3,24.7], fy29:[22.2,22.6,23.4,22.2,23.2,21.5,22.3,26.6,26.3,27.1,28.1,27.6] },
-  pcogsr:{ fy25:[7.3,6.6,7.6,7.4,7.2,9.2,13.9,8.8,5.8,8.2,7.3,10.8], fy26:[9.6,9.7,9.1,10.2,13.3,10.7,9.4,11.4,10.6,10.6,11.4,11.0], fy27:[10.1,10.1,10.0,9.7,9.7,9.6,9.4,9.4,9.3,9.1,9.1,9.0], fy28:[9.5,9.5,9.4,9.5,9.5,9.4,9.5,9.4,9.3,9.4,9.4,9.4], fy29:[9.5,9.5,9.4,9.5,9.4,9.5,9.5,9.4,9.4,9.4,9.3,9.3] },
-  bnl:{ fy25:[5.7,2.7,1.5,1.4,1.5,0.9,4.4,4.8,0.7,0.6,-1.1,1.4], fy26:[1.3,2.2,1.7,2.8,4.0,2.2,2.1,4.7,7.4,3.0,3.7,4.3], fy27:[4.3,4.5,4.9,4.7,5.3,5.1,5.2,5.8,6.2,6.4,6.7,7.0], fy28:[6.5,6.7,7.3,7.0,8.0,7.6,7.8,8.8,9.3,9.6,10.0,10.6], fy29:[8.5,8.8,9.5,9.1,10.4,9.9,10.2,11.4,12.1,12.5,13.0,13.7] },
-  bnlr:{ fy25:[31.7,15.3,7.5,6.8,6.4,4.3,20.0,19.6,2.4,2.2,-3.7,4.6], fy26:[4.0,6.1,4.2,7.9,8.5,5.9,5.5,9.8,14.6,5.7,6.8,7.5], fy27:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy28:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy29:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3] },
-  bcogs:{ fy25:[5.8,2.9,1.7,1.5,1.6,1.0,4.5,4.9,1.0,0.8,-1.0,1.6], fy26:[1.5,2.4,1.9,3.0,4.1,2.6,2.7,5.1,7.8,3.3,4.1,4.7], fy27:[4.7,5.0,5.5,5.3,6.0,5.8,6.2,7.0,7.5,7.8,8.3,8.9], fy28:[8.5,8.9,9.7,9.4,10.7,10.2,10.7,12.0,12.8,13.3,13.9,14.7], fy29:[12.1,12.4,13.4,12.8,14.3,13.5,13.9,15.5,16.3,16.8,17.3,18.2] },
-  bcogsr:{ fy25:[32.7,16.5,8.4,7.7,7.1,4.9,20.5,20.1,3.4,2.7,-3.3,5.0], fy26:[4.4,6.5,4.6,8.2,8.8,6.8,6.8,10.7,15.4,6.3,7.6,8.2], fy27:[8.0,8.1,8.2,8.2,8.2,8.4,8.6,8.8,8.9,8.9,9.1,9.3], fy28:[9.5,9.6,9.7,9.8,9.8,9.9,10.0,10.0,10.0,10.1,10.1,10.2], fy29:[10.4,10.4,10.3,10.2,10.1,10.0,10.0,9.9,9.8,9.8,9.8,9.7] },
-  combined_rate:{ fy25:[9.3,7.2,7.1,6.7,6.4,8.5,14.3,9.6,4.8,6.9,5.1,9.6], fy26:[8.4,8.8,7.8,9.7,12.1,10.0,8.5,11.0,11.5,9.3,10.3,10.2], fy27:[9.3,9.3,9.3,9.0,9.0,8.9,8.7,8.8,8.7,8.5,8.5,8.5], fy28:[8.8,8.7,8.7,8.7,8.7,8.7,8.7,8.7,8.6,8.6,8.6,8.6], fy29:[8.7,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.5,8.5,8.5,8.5] },
-  tcogs:{ fy25:[17.1,12.7,13.9,12.1,12.1,14.1,23.6,19.0,10.7,14.5,10.9,20.0], fy26:[17.4,18.9,18.0,18.8,26.4,19.2,17.2,26.1,28.1,23.1,26.6,26.2], fy27:[24.2,25.0,26.1,24.0,25.8,23.7,24.4,29.0,29.1,29.2,30.7,30.6], fy28:[28.9,29.7,31.1,29.9,32.1,29.8,31.4,36.4,36.6,38.1,39.6,39.8], fy29:[34.6,35.4,37.2,35.3,37.9,35.4,36.6,42.4,43.0,44.3,45.8,46.1] },
-  // Payroll (combined OL+DT) — Model tab, 1. Payroll_COGS_Model_TP3_v7 (LOAD).xlsx
-  // prtpv=Total Volumes r81 (/1e9); prnl=Total Net Losses r28 (/1e6); prnlr=Net Loss Rate r29 (direct);
-  // prcogs=Total OL+DT COGS r54 (/1e6); prcogsr=computed (prcogs_$M / prtpv_$B)*10
-  prtpv:{ fy25:[25.9,23.9,28.9,25.2,29.8,27.2,25.5,26.6,29.3,29.9,28.1,32.3], fy26:[29.0,28.9,32.8,28.0,35.6,27.0,27.0,28.1,32.3,29.4,30.9,33.8], fy27:[30.3,30.6,33.8,30.8,37.6,28.1,28.8,30.8,34.3,30.8,32.8,33.8], fy28:[33.3,32.6,34.4,33.9,38.8,31.0,32.1,32.6,34.5,34.9,34.9,36.0], fy29:[34.4,35.0,36.9,36.5,40.9,33.4,35.2,33.1,37.8,36.1,36.7,37.9] },
-  prnl:{ fy25:[2.0,2.1,2.7,1.4,3.1,4.5,4.0,0.7,4.1,1.2,2.3,1.4], fy26:[1.3,3.6,5.7,4.1,6.1,12.2,3.2,2.8,3.7,0.2,6.0,4.9], fy27:[3.8,3.9,4.5,4.0,4.9,3.8,4.0,4.3,4.9,4.3,4.5,4.8], fy28:[4.5,4.4,4.6,4.5,5.2,4.3,4.3,4.4,4.7,4.8,4.7,4.8], fy29:[4.7,4.8,5.0,4.9,5.5,4.6,4.8,4.6,5.2,5.0,5.0,5.2] },
-  prnlr:{ fy25:[0.8,0.9,0.9,0.6,1.1,1.6,1.6,0.2,1.4,0.4,0.8,0.4], fy26:[0.5,1.2,1.7,1.5,1.7,4.5,1.2,1.0,1.1,0.1,1.9,1.4], fy27:[1.3,1.3,1.3,1.3,1.3,1.3,1.4,1.4,1.4,1.4,1.4,1.4], fy28:[1.3,1.3,1.3,1.3,1.3,1.4,1.3,1.4,1.4,1.4,1.3,1.3], fy29:[1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4] },
-  prcogs:{ fy25:[2.9,2.9,3.3,2.1,4.2,15.8,7.5,1.8,5.8,2.9,3.5,2.5], fy26:[2.9,4.9,7.2,5.3,6.9,19.6,5.8,4.1,4.8,1.4,7.2,6.1], fy27:[5.7,5.5,6.0,5.6,6.6,11.7,7.2,6.3,6.6,5.9,6.3,6.6], fy28:[6.8,6.5,6.7,6.7,7.5,13.6,8.4,7.1,7.0,7.0,7.0,7.2], fy29:[7.4,7.2,7.4,7.5,8.2,15.2,9.5,7.5,7.9,7.4,7.6,7.8] },
-  prcogsr:{ fy25:[1.1,1.2,1.1,0.8,1.4,5.8,2.9,0.7,2.0,1.0,1.2,0.8], fy26:[1.0,1.7,2.2,1.9,1.9,7.3,2.2,1.4,1.5,0.5,2.3,1.8], fy27:[1.9,1.8,1.8,1.8,1.8,4.2,2.5,2.1,1.9,1.9,1.9,2.0], fy28:[2.0,2.0,1.9,2.0,1.9,4.4,2.6,2.2,2.0,2.0,2.0,2.0], fy29:[2.2,2.1,2.0,2.1,2.0,4.5,2.7,2.3,2.1,2.1,2.1,2.1] },
-  // OL Payroll (Online only) — Model tab, same file. oltpv=OL Volumes r79; olnl=OL Net Losses r12; olnlr=Net Loss Rate r13; olcogs=Loaded to OL COGS r55; olcogsr=computed
-  oltpv:{ fy25:[13.9,12.4,15.6,13.9,16.0,16.6,15.0,15.6,16.9,18.6,16.9,19.5], fy26:[17.9,17.6,20.3,17.3,22.1,17.3,17.1,17.5,20.5,19.1,19.6,22.0], fy27:[19.8,20.0,22.3,20.3,24.9,19.2,19.4,20.3,23.3,20.9,22.1,23.0], fy28:[23.0,22.6,23.9,23.6,27.0,22.4,22.8,22.8,24.6,25.0,24.8,25.6], fy29:[24.8,25.2,26.6,26.4,29.6,25.0,25.9,24.2,27.9,26.9,27.2,28.1] },
-  olnl:{ fy25:[1.8,1.7,2.4,1.3,3.0,4.3,3.9,0.9,4.3,1.0,1.7,1.1], fy26:[1.1,3.6,5.2,3.5,5.0,11.5,3.4,2.9,3.6,0.3,6.0,4.5], fy27:[3.5,3.6,4.1,3.7,4.5,3.5,3.8,4.0,4.5,4.0,4.2,4.4], fy28:[4.2,4.1,4.3,4.2,4.8,4.0,4.1,4.1,4.4,4.5,4.4,4.5], fy29:[4.4,4.5,4.7,4.6,5.2,4.4,4.5,4.3,4.9,4.7,4.7,4.9] },
-  olnlr:{ fy25:[1.3,1.4,1.5,1.0,1.9,2.6,2.6,0.6,2.5,0.5,1.0,0.6], fy26:[0.6,2.0,2.6,2.0,2.3,6.7,2.0,1.7,1.7,0.1,3.1,2.0], fy27:[1.8,1.8,1.9,1.8,1.8,1.8,1.9,2.0,1.9,1.9,1.9,1.9], fy28:[1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8], fy29:[1.8,1.8,1.8,1.8,1.8,1.8,1.7,1.8,1.8,1.8,1.7,1.7] },
-  olcogs:{ fy25:[2.3,2.1,2.8,1.8,3.6,15.1,7.0,1.6,5.7,1.9,2.6,2.0], fy26:[2.4,4.6,6.5,4.5,5.7,18.5,5.8,3.9,4.5,1.2,6.9,5.4], fy27:[5.1,4.9,5.4,5.0,5.9,11.2,6.7,5.7,6.0,5.3,5.7,6.0], fy28:[6.2,5.9,6.1,6.1,6.8,13.1,7.8,6.5,6.4,6.4,6.4,6.6], fy29:[6.8,6.6,6.8,6.9,7.5,14.6,8.9,6.9,7.2,6.8,7.0,7.2] },
-  olcogsr:{ fy25:[1.7,1.7,1.8,1.3,2.3,9.1,4.6,1.0,3.4,1.0,1.6,1.0], fy26:[1.3,2.6,3.2,2.6,2.6,10.7,3.4,2.2,2.2,0.6,3.5,2.5], fy27:[2.6,2.5,2.4,2.5,2.4,5.8,3.4,2.8,2.6,2.5,2.6,2.6], fy28:[2.7,2.6,2.5,2.6,2.5,5.8,3.4,2.8,2.6,2.5,2.6,2.6], fy29:[2.8,2.6,2.5,2.6,2.5,5.8,3.4,2.8,2.6,2.5,2.6,2.6] },
+  ptpv:{ fy25:[14.9,14.3,15.8,13.8,14.2,14,13.6,15.7,16.5,16.5,16.2,16.9], fy26:[16.4,16.8,17.9,15.2,16.7,15.3,15.2,18,18.9,18.4,19.3,19.4], fy27:[18.9,19.4,20.3,18.9,20,18.3,19.1,23,22.9,23.1,24.3,23.8], fy28:[21,21.5,22.3,21.1,22.2,20.3,21.3,25.4,25.2,26,27,26.2], fy29:[23.4,23.9,24.9,23.5,24.6,22.7,23.6,28.4,28.1,28.9,30.1,29.5] },
+  btpv:{ fy25:[1.8,1.8,2,2,2.3,2,2.2,2.5,2.8,2.9,3.1,3.1], fy26:[3.4,3.6,4,3.6,4.7,3.8,3.9,4.8,5.1,5.2,5.8,5.7], fy27:[5.9,6.2,6.7,6.4,7.3,6.9,7.2,8,8.5,8.8,9.1,9.7], fy28:[8.9,9.2,10,9.6,10.9,10.4,10.7,12,12.7,13.2,13.7,14.5], fy29:[11.6,12,13,12.5,14.2,13.5,13.9,15.6,16.5,17.1,17.8,18.8] },
+  pnl:{ fy25:[10,8.8,11.1,9.3,9.1,12.9,18.2,12.6,8.7,12.8,11,17.8], fy26:[15.2,15.8,15.4,15.4,21.9,16.9,14.1,20.5,20.1,18.9,15.5,20.7], fy27:[18.4,19,19.6,18.1,19.4,16.8,17.4,21.2,21,21.1,22.4,21.8], fy28:[19.6,20,20.7,19.7,20.6,19,19.8,23.5,23.3,23.9,24.8,24.2], fy29:[21.7,22.1,23,21.7,22.7,21,21.8,26.1,25.8,26.6,27.6,27.1] },
+  pnlr:{ fy25:[6.7,6.2,7,6.7,6.4,9.2,13.4,8,5.3,7.7,6.8,10.5], fy26:[9.3,9.4,8.6,10.2,13.2,11,9.3,11.4,10.6,10.2,8,10.7], fy27:[9.8,9.8,9.7,9.6,9.7,9.2,9.1,9.2,9.2,9.1,9.2,9.2], fy28:[9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.2,9.2,9.2,9.2,9.2], fy29:[9.3,9.3,9.2,9.3,9.2,9.3,9.3,9.2,9.2,9.2,9.2,9.2] },
+  pcogs:{ fy25:[10.867,9.473,12.09,10.23,10.246,12.979,18.912,13.871,9.555,13.571,11.74,18.289], fy26:[15.726,16.366,16.25,15.507,22.14,16.438,14.314,20.636,20.048,19.542,16.381,20.626], fy27:[18.585,19.12,19.536,18.282,19.515,16.671,17.499,21.298,20.937,21.21,22.499,21.712], fy28:[19.719,20.155,20.652,19.818,20.739,18.889,19.985,23.646,23.174,24.099,24.988,24.354], fy29:[21.844,22.248,23.121,21.899,22.91,21.194,21.997,26.212,25.982,26.734,27.763,27.231] },
+  pcogsr:{ fy25:[7.3,6.6,7.6,7.4,7.2,9.2,13.9,8.8,5.8,8.2,7.3,10.8], fy26:[9.6,9.7,9.1,10.2,13.3,10.7,9.4,11.4,10.6,10.6,8.5,10.6], fy27:[9.8,9.8,9.6,9.6,9.7,9.1,9.2,9.3,9.2,9.2,9.3,9.1], fy28:[9.4,9.4,9.2,9.4,9.4,9.3,9.4,9.3,9.2,9.3,9.3,9.3], fy29:[9.3,9.3,9.3,9.3,9.3,9.4,9.3,9.2,9.2,9.2,9.2,9.2] },
+  bnl:{ fy25:[5.7,2.7,1.5,1.4,1.5,0.9,4.4,4.8,0.7,0.6,-1.1,1.4], fy26:[1.3,2.2,1.7,2.8,4,2.2,2.1,4.7,7.4,3,4.4,4.6], fy27:[5.7,5.7,5.8,5.1,5.6,5.2,5.1,5.5,5.5,5.4,5.6,6], fy28:[6.5,6.7,7.3,7,8,7.6,7.8,8.8,9.3,9.6,10,10.6], fy29:[8.5,8.8,9.5,9.1,10.4,9.9,10.2,11.4,12.1,12.5,13,13.7] },
+  bnlr:{ fy25:[31.7,15.3,7.5,6.8,6.4,4.3,20,19.6,2.4,2.2,-3.7,4.6], fy26:[4,6.1,4.2,7.9,8.5,5.9,5.5,9.8,14.6,5.7,7.6,8], fy27:[9.6,9.2,8.6,8,7.7,7.6,7.1,6.9,6.4,6.1,6.1,6.2], fy28:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy29:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3] },
+  bcogs:{ fy25:[5.838,2.922,1.716,1.536,1.619,0.992,4.489,4.948,0.951,0.799,-1.02,1.556], fy26:[1.485,2.353,1.85,2.977,4.134,2.591,2.685,5.13,7.834,3.263,5.12,5.043], fy27:[6.265,6.374,6.524,5.883,6.396,6.151,6.16,6.872,6.974,6.954,7.374,8.02], fy28:[8.669,9.059,9.876,9.571,10.868,10.396,10.861,12.161,12.911,13.452,14.019,14.884], fy29:[12.252,12.607,13.541,12.917,14.457,13.665,14.081,15.666,16.45,16.947,17.484,18.338] },
+  bcogsr:{ fy25:[32.7,16.5,8.4,7.7,7.1,4.9,20.5,20.1,3.4,2.7,-3.3,5], fy26:[4.4,6.5,4.6,8.2,8.8,6.8,6.8,10.7,15.4,6.3,8.8,8.8], fy27:[10.5,10.3,9.8,9.2,8.8,8.9,8.6,8.6,8.2,7.9,8.1,8.3], fy28:[9.7,9.8,9.8,9.9,9.9,10,10.1,10.1,10.1,10.2,10.3,10.3], fy29:[10.6,10.5,10.4,10.3,10.2,10.1,10.1,10,9.9,9.9,9.8,9.7] },
+  combined_rate:{ fy25:[9.3,7.2,7.1,6.7,6.4,8.5,14.3,9.6,4.8,6.9,5.1,9.6], fy26:[8.4,8.8,7.8,9.7,12.1,10,8.5,11,11.5,9.3,7.9,10.1], fy27:[9.7,9.6,9.4,9.2,9.1,8.7,8.6,8.6,8.5,8.3,8.4,8.3], fy28:[8.7,8.7,8.7,8.7,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.5], fy29:[8.6,8.6,8.6,8.6,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.4] },
+  tcogs:{ fy25:[17.1,12.7,13.9,12.1,12.1,14.1,23.6,19,10.7,14.5,10.9,20], fy26:[17.4,18.9,18,18.8,26.4,19.2,17.2,26.1,28.1,23.1,21.9,26], fy27:[25.3,25.9,26.5,24.6,26.3,23.2,24.1,28.6,28.3,28.6,30.3,30.1], fy28:[28.9,29.7,31,29.9,32.1,29.8,31.3,36.3,36.6,38,39.5,39.7], fy29:[34.6,35.3,37.1,35.3,37.8,35.3,36.5,42.3,42.9,44.2,45.7,46] },
+  bkcogs:{ fy25:[0.421,0.327,0.116,0.291,0.272,0.131,0.193,0.139,0.212,0.175,0.222,0.173], fy26:[0.186,0.14,-0.109,0.28,0.146,0.15,0.228,0.325,0.267,0.265,0.356,0.356], fy27:[0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409], fy28:[0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471], fy29:[0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471] },
+  // Payroll (combined OL+DT) — Model tab, 1. Payroll_COGS_Model_TP4_v8 (FY27 Target).xlsx (TP4 layout: prtpv=Total Volumes r78, prnl r28, prnlr r29, prcogs=Total OL+DT COGS r51; prcogsr computed)
+  prtpv:{ fy25:[25.9,23.9,28.9,25.2,29.8,27.2,25.5,26.6,29.3,29.9,28.1,32.3], fy26:[29,28.9,32.8,28,35.6,27,27,28.1,32.3,29.4,31,33.9], fy27:[30.8,30.9,34,30.5,36.8,29.4,29.2,30.8,34.5,31.5,32.7,34.5], fy28:[33.4,32.8,34.5,34.1,39,31.2,32.3,32.8,34.6,35.1,34.4,36.1], fy29:[34.5,35.1,37,36.7,41.1,33.6,35.4,33.2,38,36.3,36.3,38.1] },
+  prnl:{ fy25:[2,2.1,2.7,1.4,3.1,4.5,4,0.7,4.1,1.2,2.3,1.4], fy26:[1.3,3.6,5.7,4.1,6.1,12.2,3.2,2.8,3.7,0.2,7.6,15.5], fy27:[5.8,5.9,4.6,4.3,5.1,4.1,4.2,4.3,4.8,4.4,4.5,4.8], fy28:[3.6,3.6,3.7,3.7,4.2,3.6,3.6,3.6,3.8,3.9,3.8,4], fy29:[3.9,3.9,4.1,4.1,4.6,3.9,4,3.8,4.3,4.1,4.1,4.3] },
+  prnlr:{ fy25:[0.8,0.9,0.9,0.6,1.1,1.6,1.6,0.2,1.4,0.4,0.8,0.4], fy26:[0.5,1.2,1.7,1.5,1.7,4.5,1.2,1,1.1,0.1,2.5,4.6], fy27:[1.9,1.9,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4], fy28:[1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1], fy29:[1.1,1.1,1.1,1.1,1.1,1.2,1.1,1.1,1.1,1.1,1.1,1.1] },
+  prcogs:{ fy25:[2.865,2.894,3.279,2.122,4.189,15.76,7.473,1.773,5.841,2.919,3.457,2.504], fy26:[2.852,4.88,7.192,5.297,6.915,19.58,5.848,4.077,4.76,1.364,8.673,16.671], fy27:[7.279,7.268,6.045,5.718,6.479,12.548,7.587,6.216,6.48,6.203,6.469,6.871], fy28:[6.041,6.104,6.402,6.433,7.041,14.481,8.743,6.953,6.863,6.898,6.814,7.055], fy29:[7.166,7.262,7.486,7.485,8.013,16.624,10.074,7.745,7.884,7.697,7.657,7.908] },
+  prcogsr:{ fy25:[1.1,1.2,1.1,0.8,1.4,5.8,2.9,0.7,2,1,1.2,0.8], fy26:[1,1.7,2.2,1.9,1.9,7.3,2.2,1.4,1.5,0.5,2.8,4.9], fy27:[2.4,2.3,1.8,1.9,1.8,4.3,2.6,2,1.9,2,2,2], fy28:[1.8,1.9,1.9,1.9,1.8,4.6,2.7,2.1,2,2,2,2], fy29:[2.1,2.1,2,2,2,4.9,2.8,2.3,2.1,2.1,2.1,2.1] },
+  // OL Payroll (Online only) — same file. oltpv=OL Volumes r76; olnl r12; olnlr r13; olcogs=Loaded to OL COGS r52; olcogsr computed
+  // olrec=|Recoveries| r8 ($M, abs); olrecr=|r8|/Write-offs r7 *100 (%)
+  oltpv:{ fy25:[13.9,12.4,15.6,13.9,16,16.6,15,15.6,16.9,18.6,16.9,19.5], fy26:[17.9,17.6,20.3,17.3,22.1,17.3,17.1,17.5,20.5,19.1,19.7,22.1], fy27:[20.2,20.2,22.5,20.2,24.5,20,19.7,20.4,23.5,21.5,22,23.6], fy28:[23.1,22.7,24,23.7,27.1,22.6,23,23,24.7,25.1,24.4,25.8], fy29:[25,25.4,26.8,26.6,29.8,25.2,26.1,24.4,28.1,27.1,26.8,28.3] },
+  olnl:{ fy25:[1.8,1.7,2.4,1.3,3,4.3,3.9,0.9,4.3,1,1.7,1.1], fy26:[1.1,3.6,5.2,3.5,5,11.5,3.4,2.9,3.6,0.3,7.1,15], fy27:[5.5,5.5,4.3,4,4.7,3.8,3.9,4,4.5,4.1,4.2,4.4], fy28:[3.3,3.3,3.4,3.4,3.9,3.3,3.3,3.3,3.5,3.6,3.5,3.7], fy29:[3.6,3.6,3.8,3.8,4.3,3.7,3.7,3.5,4,3.9,3.8,4] },
+  olnlr:{ fy25:[1.3,1.4,1.5,1,1.9,2.6,2.6,0.6,2.5,0.5,1,0.6], fy26:[0.6,2,2.6,2,2.3,6.7,2,1.7,1.7,0.1,3.6,6.8], fy27:[2.7,2.7,1.9,2,1.9,1.9,2,2,1.9,1.9,1.9,1.9], fy28:[1.4,1.4,1.4,1.4,1.4,1.5,1.4,1.4,1.4,1.4,1.4,1.4], fy29:[1.4,1.4,1.4,1.4,1.4,1.5,1.4,1.4,1.4,1.4,1.4,1.4] },
+  olcogs:{ fy25:[2.3,2.1,2.8,1.8,3.6,15.1,7,1.6,5.7,1.9,2.6,2], fy26:[2.4,4.6,6.5,4.5,5.7,18.5,5.8,3.9,4.5,1.2,8,15.9], fy27:[6.7,6.6,5.4,5.1,5.8,12,7,5.6,5.8,5.6,5.8,6.2], fy28:[5.4,5.5,5.7,5.8,6.3,13.9,8.1,6.3,6.2,6.2,6.2,6.4], fy29:[6.5,6.6,6.8,6.8,7.3,16,9.4,7.1,7.2,7,7,7.2] },
+  olcogsr:{ fy25:[1.7,1.7,1.8,1.3,2.3,9.1,4.6,1,3.4,1,1.6,1], fy26:[1.3,2.6,3.2,2.6,2.6,10.7,3.4,2.2,2.2,0.6,4.1,7.2], fy27:[3.3,3.3,2.4,2.5,2.4,6,3.6,2.7,2.5,2.6,2.7,2.6], fy28:[2.3,2.4,2.4,2.4,2.3,6.2,3.5,2.7,2.5,2.5,2.5,2.5], fy29:[2.6,2.6,2.5,2.5,2.4,6.3,3.6,2.9,2.6,2.6,2.6,2.6] },
+  olrec:{ fy25:[0.7,0.5,0.8,0.9,0.6,0.8,1,1,1,0.9,0.6,0.9], fy26:[0.6,0.6,1.3,1.8,1.7,1.4,1.1,1.4,1.6,1.5,1.3,0.8], fy27:[1.2,1.2,1.3,1.2,1.5,1.1,1.2,1.2,1.4,1.2,1.3,1.4], fy28:[1.3,1.3,1.3,1.3,1.5,1.3,1.3,1.3,1.4,1.4,1.4,1.4], fy29:[1.4,1.4,1.5,1.5,1.7,1.4,1.5,1.4,1.6,1.5,1.5,1.6] },
+  olrecr:{ fy25:[30.7,22.3,48.2,41.1,25.6,20.7,22.2,34.3,26,39.2,35.7,50.5], fy26:[33.2,13.3,17,52.1,34.4,24.6,21.6,23.6,24.9,74.1,32,10.3], fy27:[28,28,28,28,28,28,28,28,28,28,28,28], fy28:[28,28,28,28,28,28,28,28,28,28,28,28], fy29:[28,28,28,28,28,28,28,28,28,28,28,28] },
+};
+
+// Target Pass 3 (preserved scenario; snapshot of the pre-TP4 default — Payments TP3_v14 + Payroll TP3_v11 with 6.26 Jun/Jul). Summary-Table-only.
+const TP3_OLD={
+  ptpv:{ fy25:[14.9,14.3,15.8,13.8,14.2,14,13.6,15.7,16.5,16.5,16.2,16.9], fy26:[16.4,16.8,17.9,15.2,16.7,15.3,15.2,18,18.9,18.4,19.4,19.4], fy27:[18.9,19.4,20.3,18.9,20,18.3,19.1,23,22.9,23.1,24.3,23.8], fy28:[21,21.5,22.3,21.1,22.2,20.3,21.3,25.4,25.2,26,27,26.2], fy29:[23.4,23.9,24.9,23.5,24.6,22.7,23.6,28.4,28.1,28.9,30.1,29.5] },
+  btpv:{ fy25:[1.8,1.8,2,2,2.3,2,2.2,2.5,2.8,2.9,3.1,3.1], fy26:[3.4,3.6,4,3.6,4.7,3.8,3.9,4.8,5.1,5.2,5.4,5.7], fy27:[5.9,6.2,6.7,6.4,7.3,6.9,7.2,8,8.5,8.8,9.1,9.7], fy28:[8.9,9.2,10,9.6,10.9,10.4,10.7,12,12.7,13.2,13.7,14.5], fy29:[11.6,12,13,12.5,14.2,13.5,13.9,15.6,16.5,17.1,17.8,18.8] },
+  pnl:{ fy25:[10,8.8,11.1,9.3,9.1,12.9,18.2,12.6,8.7,12.8,11,17.8], fy26:[15.2,15.8,15.4,15.4,21.9,16.9,14.1,20.5,20.1,18.9,22,21.3], fy27:[18.9,19.4,20.2,18.2,19.2,17.5,17.7,21.3,21.2,20.8,21.8,21.4], fy28:[19.7,20.1,20.9,19.8,20.7,19.1,20,23.7,23.4,24.1,25,24.4], fy29:[21.8,22.3,23.1,21.9,22.9,21.2,22,26.2,26,26.8,27.8,27.3] },
+  pnlr:{ fy25:[6.7,6.2,7,6.7,6.4,9.2,13.4,8,5.3,7.7,6.8,10.5], fy26:[9.3,9.4,8.6,10.2,13.2,11,9.3,11.4,10.6,10.2,11.3,11], fy27:[10,10,10,9.6,9.6,9.6,9.3,9.3,9.3,9,9,9], fy28:[9.4,9.4,9.4,9.4,9.4,9.4,9.4,9.3,9.3,9.3,9.3,9.3], fy29:[9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.2,9.2,9.2] },
+  pcogs:{ fy25:[10.867,9.473,12.09,10.23,10.246,12.979,18.912,13.871,9.555,13.571,11.74,18.289], fy26:[15.726,16.366,16.25,15.507,22.14,16.438,14.314,20.636,20.048,19.542,22.223,21.274], fy27:[19.152,19.67,20.263,18.424,19.466,17.513,17.934,21.579,21.238,21.025,22.054,21.377], fy28:[20.013,20.452,20.955,20.113,21.041,19.178,20.282,23.971,23.497,24.428,25.324,24.685], fy29:[22.155,22.562,23.442,22.21,23.229,21.5,22.309,26.558,26.325,27.084,28.121,27.585] },
+  pcogsr:{ fy25:[7.3,6.6,7.6,7.4,7.2,9.2,13.9,8.8,5.8,8.2,7.3,10.8], fy26:[9.6,9.7,9.1,10.2,13.3,10.7,9.4,11.4,10.6,10.6,11.4,11], fy27:[10.1,10.1,10,9.7,9.7,9.6,9.4,9.4,9.3,9.1,9.1,9], fy28:[9.5,9.5,9.4,9.5,9.5,9.4,9.5,9.4,9.3,9.4,9.4,9.4], fy29:[9.5,9.5,9.4,9.5,9.4,9.5,9.5,9.4,9.4,9.4,9.3,9.3] },
+  bnl:{ fy25:[5.7,2.7,1.5,1.4,1.5,0.9,4.4,4.8,0.7,0.6,-1.1,1.4], fy26:[1.3,2.2,1.7,2.8,4,2.2,2.1,4.7,7.4,3,3.7,4.3], fy27:[4.3,4.5,4.9,4.7,5.3,5.1,5.2,5.8,6.2,6.4,6.7,7], fy28:[6.5,6.7,7.3,7,8,7.6,7.8,8.8,9.3,9.6,10,10.6], fy29:[8.5,8.8,9.5,9.1,10.4,9.9,10.2,11.4,12.1,12.5,13,13.7] },
+  bnlr:{ fy25:[31.7,15.3,7.5,6.8,6.4,4.3,20,19.6,2.4,2.2,-3.7,4.6], fy26:[4,6.1,4.2,7.9,8.5,5.9,5.5,9.8,14.6,5.7,6.8,7.5], fy27:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy28:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy29:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3] },
+  bcogs:{ fy25:[5.838,2.922,1.716,1.536,1.619,0.992,4.489,4.948,0.951,0.799,-1.02,1.556], fy26:[1.485,2.353,1.85,2.977,4.134,2.591,2.685,5.13,7.834,3.263,4.106,4.677], fy27:[4.741,5.015,5.49,5.275,5.956,5.82,6.169,7.048,7.542,7.814,8.274,8.942], fy28:[8.511,8.902,9.718,9.413,10.71,10.238,10.703,12.003,12.753,13.294,13.861,14.726], fy29:[12.094,12.449,13.383,12.759,14.299,13.507,13.923,15.508,16.292,16.789,17.326,18.18] },
+  bcogsr:{ fy25:[32.7,16.5,8.4,7.7,7.1,4.9,20.5,20.1,3.4,2.7,-3.3,5], fy26:[4.4,6.5,4.6,8.2,8.8,6.8,6.8,10.7,15.4,6.3,7.6,8.2], fy27:[8,8.1,8.2,8.2,8.2,8.4,8.6,8.8,8.9,8.9,9.1,9.3], fy28:[9.5,9.6,9.7,9.8,9.8,9.9,10,10,10,10.1,10.1,10.2], fy29:[10.4,10.4,10.3,10.2,10.1,10,10,9.9,9.8,9.8,9.8,9.7] },
+  bkcogs:{ fy25:[0.421,0.327,0.116,0.291,0.272,0.131,0.193,0.139,0.212,0.175,0.222,0.173], fy26:[0.186,0.14,-0.109,0.28,0.146,0.15,0.228,0.325,0.267,0.265,0.286,0.286], fy27:[0.329,0.329,0.329,0.329,0.329,0.329,0.329,0.329,0.329,0.329,0.329,0.329], fy28:[0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378], fy29:[0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378,0.378] },
+  prtpv:{ fy25:[25.9,23.9,28.9,25.2,29.8,27.2,25.5,26.6,29.3,29.9,28.1,32.3], fy26:[29,28.9,32.8,28,35.6,27,27,28.1,32.3,29.4,30.9,33.8], fy27:[30.3,30.6,33.8,30.8,37.6,28.1,28.8,30.8,34.3,30.8,32.8,33.8], fy28:[33.3,32.6,34.4,33.9,38.8,31,32.1,32.6,34.5,34.9,34.9,36], fy29:[34.4,35,36.9,36.5,40.9,33.4,35.2,33.1,37.8,36.1,36.7,37.9] },
+  prnl:{ fy25:[2,2.1,2.7,1.4,3.1,4.5,4,0.7,4.1,1.2,2.3,1.4], fy26:[1.3,3.6,5.7,4.1,6.1,12.2,3.2,2.8,3.7,0.2,6,4.9], fy27:[3.8,3.9,4.5,4,4.9,3.8,4,4.3,4.9,4.3,4.5,4.8], fy28:[4.5,4.4,4.6,4.5,5.2,4.3,4.3,4.4,4.7,4.8,4.7,4.8], fy29:[4.7,4.8,5,4.9,5.5,4.6,4.8,4.6,5.2,5,5,5.2] },
+  prnlr:{ fy25:[0.8,0.9,0.9,0.6,1.1,1.6,1.6,0.2,1.4,0.4,0.8,0.4], fy26:[0.5,1.2,1.7,1.5,1.7,4.5,1.2,1,1.1,0.1,1.9,1.4], fy27:[1.3,1.3,1.3,1.3,1.3,1.3,1.4,1.4,1.4,1.4,1.4,1.4], fy28:[1.3,1.3,1.3,1.3,1.3,1.4,1.3,1.4,1.4,1.4,1.3,1.3], fy29:[1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4] },
+  prcogs:{ fy25:[2.865,2.894,3.279,2.122,4.189,15.76,7.473,1.773,5.841,2.919,3.457,2.504], fy26:[2.852,4.88,7.192,5.297,6.915,19.58,5.848,4.077,4.76,1.364,7.216,6.079], fy27:[5.675,5.492,6.031,5.592,6.638,11.693,7.216,6.329,6.633,5.914,6.304,6.647], fy28:[6.791,6.458,6.666,6.738,7.483,13.613,8.418,7.078,7.015,6.96,6.983,7.189], fy29:[7.432,7.241,7.418,7.495,8.15,15.177,9.473,7.462,7.853,7.442,7.564,7.802] },
+  prcogsr:{ fy25:[1.1,1.2,1.1,0.8,1.4,5.8,2.9,0.7,2,1,1.2,0.8], fy26:[1,1.7,2.2,1.9,1.9,7.3,2.2,1.4,1.5,0.5,2.3,1.8], fy27:[1.9,1.8,1.8,1.8,1.8,4.2,2.5,2.1,1.9,1.9,1.9,2], fy28:[2,2,1.9,2,1.9,4.4,2.6,2.2,2,2,2,2], fy29:[2.2,2.1,2,2.1,2,4.5,2.7,2.3,2.1,2.1,2.1,2.1] },
+};
+
+// FY27 Risk Goal — Payments COGS Model_TP4_v10 (Risk Goal).xlsx + 1. Payroll_COGS_Model_TP4_v9 (Risk Goal).xlsx (Model tabs, TP4 layout). Summary-Table-only.
+const RG_FY27={
+  ptpv:{ fy25:[14.9,14.3,15.8,13.8,14.2,14,13.6,15.7,16.5,16.5,16.2,16.9], fy26:[16.4,16.8,17.9,15.2,16.7,15.3,15.2,18,18.9,18.4,19.3,19.4], fy27:[18.9,19.4,20.3,18.9,20,18.3,19.1,23,22.9,23.1,24.3,23.8], fy28:[21,21.5,22.3,21.1,22.2,20.3,21.3,25.4,25.2,26,27,26.2], fy29:[23.4,23.9,24.9,23.5,24.6,22.7,23.6,28.4,28.1,28.9,30.1,29.5] },
+  btpv:{ fy25:[1.8,1.8,2,2,2.3,2,2.2,2.5,2.8,2.9,3.1,3.1], fy26:[3.4,3.6,4,3.6,4.7,3.8,3.9,4.8,5.1,5.2,5.8,5.7], fy27:[5.9,6.2,6.7,6.4,7.3,6.9,7.2,8,8.5,8.8,9.1,9.7], fy28:[8.9,9.2,10,9.6,10.9,10.4,10.7,12,12.7,13.2,13.7,14.5], fy29:[11.6,12,13,12.5,14.2,13.5,13.9,15.6,16.5,17.1,17.8,18.8] },
+  pnl:{ fy25:[10,8.8,11.1,9.3,9.1,12.9,18.2,12.6,8.7,12.8,11,17.8], fy26:[15.2,15.8,15.4,15.4,21.9,16.9,14.1,20.5,20.1,18.9,15.5,20.7], fy27:[16.5,17,17.6,16.2,17.3,14.9,15.4,18.8,18.7,18.7,19.9,19.4], fy28:[19.6,20,20.7,19.7,20.6,19,19.8,23.5,23.3,23.9,24.8,24.2], fy29:[21.7,22.1,23,21.7,22.7,21,21.8,26.1,25.8,26.6,27.6,27.1] },
+  pnlr:{ fy25:[6.7,6.2,7,6.7,6.4,9.2,13.4,8,5.3,7.7,6.8,10.5], fy26:[9.3,9.4,8.6,10.2,13.2,11,9.3,11.4,10.6,10.2,8,10.7], fy27:[8.7,8.7,8.6,8.5,8.6,8.2,8.1,8.2,8.2,8.1,8.2,8.1], fy28:[9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.2,9.2,9.2,9.2,9.2], fy29:[9.3,9.3,9.2,9.3,9.2,9.3,9.3,9.2,9.2,9.2,9.2,9.2] },
+  pcogs:{ fy25:[10.867,9.473,12.09,10.23,10.246,12.979,18.912,13.871,9.555,13.571,11.74,18.289], fy26:[15.726,16.366,16.25,15.507,22.14,16.438,14.314,20.636,20.048,19.542,16.381,20.626], fy27:[16.641,17.119,17.448,16.333,17.453,14.791,15.539,18.936,18.586,18.832,20.003,19.265], fy28:[19.719,20.155,20.652,19.818,20.739,18.889,19.985,23.646,23.174,24.099,24.988,24.354], fy29:[21.844,22.248,23.121,21.899,22.91,21.194,21.997,26.212,25.982,26.734,27.763,27.231] },
+  pcogsr:{ fy25:[7.3,6.6,7.6,7.4,7.2,9.2,13.9,8.8,5.8,8.2,7.3,10.8], fy26:[9.6,9.7,9.1,10.2,13.3,10.7,9.4,11.4,10.6,10.6,8.5,10.6], fy27:[8.8,8.8,8.6,8.6,8.7,8.1,8.2,8.2,8.1,8.1,8.2,8.1], fy28:[9.4,9.4,9.2,9.4,9.4,9.3,9.4,9.3,9.2,9.3,9.3,9.3], fy29:[9.3,9.3,9.3,9.3,9.3,9.4,9.3,9.2,9.2,9.2,9.2,9.2] },
+  bnl:{ fy25:[5.7,2.7,1.5,1.4,1.5,0.9,4.4,4.8,0.7,0.6,-1.1,1.4], fy26:[1.3,2.2,1.7,2.8,4,2.2,2.1,4.7,7.4,3,4.4,4.6], fy27:[4.5,4.4,4.4,3.8,4.1,3.8,3.6,3.8,3.7,3.6,3.7,3.9], fy28:[6.5,6.7,7.3,7,8,7.6,7.8,8.8,9.3,9.6,10,10.6], fy29:[8.5,8.8,9.5,9.1,10.4,9.9,10.2,11.4,12.1,12.5,13,13.7] },
+  bnlr:{ fy25:[31.7,15.3,7.5,6.8,6.4,4.3,20,19.6,2.4,2.2,-3.7,4.6], fy26:[4,6.1,4.2,7.9,8.5,5.9,5.5,9.8,14.6,5.7,7.6,8], fy27:[7.5,7.1,6.5,5.9,5.6,5.5,5,4.8,4.4,4,4,4.1], fy28:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3], fy29:[7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3] },
+  bcogs:{ fy25:[5.838,2.922,1.716,1.536,1.619,0.992,4.489,4.948,0.951,0.799,-1.02,1.556], fy26:[1.485,2.353,1.85,2.977,4.134,2.591,2.685,5.13,7.834,3.263,5.12,5.043], fy27:[5.019,5.082,5.121,4.537,4.867,4.699,4.66,5.195,5.194,5.111,5.463,5.995], fy28:[8.669,9.059,9.876,9.571,10.868,10.396,10.861,12.161,12.911,13.452,14.019,14.884], fy29:[12.252,12.607,13.541,12.917,14.457,13.665,14.081,15.666,16.45,16.947,17.484,18.338] },
+  bcogsr:{ fy25:[32.7,16.5,8.4,7.7,7.1,4.9,20.5,20.1,3.4,2.7,-3.3,5], fy26:[4.4,6.5,4.6,8.2,8.8,6.8,6.8,10.7,15.4,6.3,8.8,8.8], fy27:[8.4,8.2,7.7,7.1,6.7,6.8,6.5,6.5,6.1,5.8,6,6.2], fy28:[9.7,9.8,9.8,9.9,9.9,10,10.1,10.1,10.1,10.2,10.3,10.3], fy29:[10.6,10.5,10.4,10.3,10.2,10.1,10.1,10,9.9,9.9,9.8,9.7] },
+  bkcogs:{ fy25:[0.421,0.327,0.116,0.291,0.272,0.131,0.193,0.139,0.212,0.175,0.222,0.173], fy26:[0.186,0.14,-0.109,0.28,0.146,0.15,0.228,0.325,0.267,0.265,0.356,0.356], fy27:[0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409,0.409], fy28:[0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471], fy29:[0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471,0.471] },
+  prtpv:{ fy25:[25.9,23.9,28.9,25.2,29.8,27.2,25.5,26.6,29.3,29.9,28.1,32.3], fy26:[29,28.9,32.8,28,35.6,27,27,28.1,32.3,29.4,31,33.9], fy27:[30.8,30.9,34,30.5,36.8,29.4,29.2,30.8,34.5,31.5,32.7,34.5], fy28:[33.4,32.8,34.5,34.1,39,31.2,32.3,32.8,34.6,35.1,34.4,36.1], fy29:[34.5,35.1,37,36.7,41.1,33.6,35.4,33.2,38,36.3,36.3,38.1] },
+  prnl:{ fy25:[2,2.1,2.7,1.4,3.1,4.5,4,0.7,4.1,1.2,2.3,1.4], fy26:[1.3,3.6,5.7,4.1,6.1,12.2,3.2,2.8,3.7,0.2,7.6,15.5], fy27:[5.8,5.9,3.7,3.4,4.2,3.2,3.3,3.4,3.9,3.5,3.6,3.8], fy28:[3.6,3.6,3.7,3.7,4.2,3.6,3.6,3.6,3.8,3.9,3.8,4], fy29:[3.9,3.9,4.1,4.1,4.6,3.9,4,3.8,4.3,4.1,4.1,4.3] },
+  prnlr:{ fy25:[0.8,0.9,0.9,0.6,1.1,1.6,1.6,0.2,1.4,0.4,0.8,0.4], fy26:[0.5,1.2,1.7,1.5,1.7,4.5,1.2,1,1.1,0.1,2.5,4.6], fy27:[1.9,1.9,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1], fy28:[1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1], fy29:[1.1,1.1,1.1,1.1,1.1,1.2,1.1,1.1,1.1,1.1,1.1,1.1] },
+  prcogs:{ fy25:[2.865,2.894,3.279,2.122,4.189,15.76,7.473,1.773,5.841,2.919,3.457,2.504], fy26:[2.852,4.88,7.192,5.297,6.915,19.58,5.848,4.077,4.76,1.364,8.673,16.671], fy27:[7.279,7.268,5.133,4.806,5.567,11.636,6.675,5.304,5.568,5.292,5.557,5.959], fy28:[6.041,6.104,6.402,6.433,7.041,14.481,8.743,6.953,6.863,6.898,6.814,7.055], fy29:[7.166,7.262,7.486,7.485,8.013,16.624,10.074,7.745,7.884,7.697,7.657,7.908] },
+  prcogsr:{ fy25:[1.1,1.2,1.1,0.8,1.4,5.8,2.9,0.7,2,1,1.2,0.8], fy26:[1,1.7,2.2,1.9,1.9,7.3,2.2,1.4,1.5,0.5,2.8,4.9], fy27:[2.4,2.3,1.5,1.6,1.5,4,2.3,1.7,1.6,1.7,1.7,1.7], fy28:[1.8,1.9,1.9,1.9,1.8,4.6,2.7,2.1,2,2,2,2], fy29:[2.1,2.1,2,2,2,4.9,2.8,2.3,2.1,2.1,2.1,2.1] },
 };
 
 // 06.29 Refresh — Payments+Bill Pay from Payments COGS Model_TP3_v14 (6.29 Update).xlsx (Model tab),
@@ -817,21 +936,40 @@ const FY25={
 const sumQ=a=>[0,1,2,3].map(q=>a.slice(q*3,q*3+3).reduce((x,y)=>x+y,0));
 const avgQ=a=>[0,1,2,3].map(q=>a.slice(q*3,q*3+3).reduce((x,y)=>x+y,0)/3);
 const annSum=(src,fy,k)=>{const a=src[k]&&src[k][fy];return a?a.reduce((x,y)=>x+y,0):null;};
-const annAvg=(src,fy,k)=>{const a=src[k]&&src[k][fy];return a?a.reduce((x,y)=>x+y,0)/a.length:null;};
+// Rate rows map to (numerator $key, denominator $key). Annual/YTD rate = Σnumerator($M) / Σdenominator($B) × 10 (bps),
+// i.e. denominator-weighted — NOT a simple average of the monthly rates (which over/under-states when volume drifts within the year).
+const RATE_NUM={pnlr:'pnl',pcogsr:'pcogs',bnlr:'bnl',bcogsr:'bcogs',prnlr:'prnl',prcogsr:'prcogs',olnlr:'olnl',olcogsr:'olcogs'};
+const RATE_DEN={pnlr:'ptpv',pcogsr:'ptpv',bnlr:'btpv',bcogsr:'btpv',prnlr:'prtpv',prcogsr:'prtpv',olnlr:'oltpv',olcogsr:'oltpv'};
+// Weighted annual rate over a[0..n) of the monthly arrays (n omitted = full year).
+const wtRate=(src,fy,k,n)=>{
+  const num=src[RATE_NUM[k]]&&src[RATE_NUM[k]][fy], den=src[RATE_DEN[k]]&&src[RATE_DEN[k]][fy];
+  if(!num||!den) return null;
+  n=n||num.length;
+  let sn=0,sd=0; for(let i=0;i<n;i++){sn+=num[i]||0;sd+=den[i]||0;}
+  return sd?sn/sd*10:0;
+};
+// Annual value: weighted rate for bps rows, plain sum otherwise. Falls back to averaging the rate
+// array if the numerator/denominator keys aren't present in this dataset (older scenarios).
+const annAvg=(src,fy,k)=>{
+  if(RATE_NUM[k]){ const w=wtRate(src,fy,k); if(w!=null) return w; }
+  const a=src[k]&&src[k][fy];return a?a.reduce((x,y)=>x+y,0)/a.length:null;
+};
 const getArr=(src,fy,k,sum)=>{const a=src[k]&&src[k][fy];if(!a)return null;return period==='monthly'?[...a]:sum?sumQ(a):avgQ(a);};
 const ha=(h,a)=>{const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;};
 const fmtM=v=>v==null?'—':'$'+v.toFixed(1)+'M';
 const fmtB=v=>v==null?'—':v.toFixed(1);
 const fmtTpv=v=>v==null?'—':'$'+v.toFixed(1)+'B';
-const fmtTpvd=v=>v==null?'—':(v>=0?'+$':'-$')+Math.abs(v).toFixed(1)+'B'; // delta formatter for TPV $B
-const fmtBd=v=>v==null?'—':(v>0?'+':'')+v.toFixed(1); // delta formatter for bps
-const fmtMd=v=>v==null?'—':(v>=0?'+$':'-$')+Math.abs(v).toFixed(1)+'M'; // delta formatter for $M, signed
+// Delta formatters. Values rounding to 0.0 render unsigned ($0.0M) rather than a confusing signed zero (-$0.0M).
+const fmtTpvd=v=>v==null?'—':(Math.abs(v)<0.05?'$0.0B':(v>0?'+$':'-$')+Math.abs(v).toFixed(1)+'B');
+const fmtBd=v=>v==null?'—':(Math.abs(v)<0.05?'0.0':(v>0?'+':'')+v.toFixed(1));
+const fmtMd=v=>v==null?'—':(Math.abs(v)<0.05?'$0.0M':(v>0?'+$':'-$')+Math.abs(v).toFixed(1)+'M');
 const calcItpy=(curr,prior)=>(!prior||prior===0)?null:Math.round((curr/Math.abs(prior))*100);
 
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
 let zoom='fy2627', period='monthly', tab='ov', cmp='off', ytdMo=12;
+let tblFy='both'; // Summary Table fiscal-year columns: 'fy26' | 'fy27' | 'both'
 // cmp states: 'off' | 'mfp2' | 'ra' | 'tp2rg' | 'tp2mlr' | 'ce0605'
 const C_FCST_RG='#CE93D8'; // TP2 Risk Goal compare color (purple)
 const C_FCST_MLR='#FFB74D'; // TP2 Most Likely Risk compare color (amber)
@@ -940,13 +1078,14 @@ function barOpts(stacked) {
     scales:{ x:{...BASE_X,stacked:!!stacked}, y:{...BASE_Y_M,stacked:!!stacked} },
   };
 }
-function lineOpts() {
+function lineOpts(unit) {
+  const u = unit || 'bps';
   return {
     responsive:true, maintainAspectRatio:false, animation:{duration:200},
     plugins:{ legend:{display:false}, datalabels:dlLine(),
       tooltip:{ mode:'index', intersect:false, backgroundColor:'#fff', borderColor:'#DDE1E9', borderWidth:1,
         titleColor:'#0D1B3E', bodyColor:'#4A5E7A', padding:8,
-        callbacks:{label:c=>c.parsed.y==null?null:`  ${c.dataset.label}: ${c.parsed.y.toFixed(1)} bps`} } },
+        callbacks:{label:c=>c.parsed.y==null?null:`  ${c.dataset.label}: ${c.parsed.y.toFixed(1)} ${u}`} } },
     layout:{ padding:{top:22, bottom:16} },
     scales:{ x:BASE_X, y:BASE_Y_B },
   };
@@ -1242,9 +1381,13 @@ function renderMets(id, defs) {
   const el=document.getElementById(id); if(!el)return;
   el.innerHTML='<div class="met-grid">'+defs.map(d=>{
     const bps=d.bps;
-    const v26=bps?annAvg(TP2,'fy26',d.k):annSum(TP2,'fy26',d.k);
-    const v27=bps?annAvg(TP2,'fy27',d.k):annSum(TP2,'fy27',d.k);
-    const v25=FY25[d.k];
+    // d.ks (array) = summed metric across multiple keys (e.g. Total COGS = pcogs+bcogs+prcogs)
+    const gv=(fy)=>d.ks
+      ? d.ks.reduce((s,k)=>s+(annSum(TP2,fy,k)||0),0)
+      : (bps?annAvg(TP2,fy,d.k):annSum(TP2,fy,d.k));
+    const v26=gv('fy26');
+    const v27=gv('fy27');
+    const v25=d.ks ? d.ks.reduce((s,k)=>s+(FY25[k]||0),0) : FY25[d.k];
     const i26=calcItpy(v26,v25), i27=calcItpy(v27,v26);
     const p=(iv)=>iv==null?'':iv>100
       ?`<span class="itpy-pill up">${iv} ITPY</span>`
@@ -1263,7 +1406,7 @@ function renderMets(id, defs) {
           <span class="fy-val ${d.vc||''}">${fmt(v27)}</span>
           <span class="itpy">${p(i27)}<span style="font-size:8px;color:var(--text3)">vs FY26</span></span>
         </div>`:'';
-    return`<div class="met ${d.cc}">
+    return`<div class="met ${d.cc}"${d.span2?' style="grid-row:span 2"':''}>
       <div class="met-lbl">${d.lbl}</div>
       <div class="fy-row">
         <div class="fy-col">
@@ -1278,104 +1421,123 @@ function renderMets(id, defs) {
 }
 
 function allMets() {
+  // 5 columns: Payments, Bill Pay, All Payroll, OL Payroll, Total COGS.
+  // Row-major fill: row 1 = Losses per product + Total COGS (spans both rows); row 2 = COGS per product.
   renderMets('ov-metrics',[
-    {lbl:'Payments Net Losses',k:'pnl',cc:'bl',vc:'bl'},
-    {lbl:'Bill Pay Net Losses',k:'bnl',cc:'bl',vc:'bl'},
-    {lbl:'Total COGS (inc. Bill Pay & Banking)',k:'tcogs',cc:'bl',vc:'bl'},
-    {lbl:'Payments COGS',k:'pcogs',cc:'bl',vc:'bl'},
-    {lbl:'Bill Pay COGS',k:'bcogs',cc:'bl',vc:'bl'},
+    {lbl:'Payments Losses',k:'pnl',cc:'bl',vc:'bl'},
+    {lbl:'Bill Pay Losses',k:'bnl',cc:'bl',vc:'bl'},
+    {lbl:'All Payroll Losses',k:'prnl',cc:'bl',vc:'bl'},
+    {lbl:'OL Payroll Losses',k:'olnl',cc:'bl',vc:'bl'},
+    {lbl:'Total COR (Pmts + Bill Pay + Payroll)',ks:['pcogs','bcogs','prcogs'],cc:'bl',vc:'bl',span2:true},
+    {lbl:'Payments COR',k:'pcogs',cc:'bl',vc:'bl'},
+    {lbl:'Bill Pay COR',k:'bcogs',cc:'bl',vc:'bl'},
+    {lbl:'All Payroll COR',k:'prcogs',cc:'bl',vc:'bl'},
+    {lbl:'OL Payroll COR',k:'olcogs',cc:'bl',vc:'bl'},
   ]);
   renderMets('pm-metrics',[
-    {lbl:'Net Losses',k:'pnl',cc:'bl',vc:'bl'},
-    {lbl:'COGS',k:'pcogs',cc:'bl',vc:'bl'},
-    {lbl:'Net Loss Rate (avg)',k:'pnlr',cc:'bl',vc:'bl',bps:true},
-    {lbl:'COGS Rate (avg)',k:'pcogsr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'Losses',k:'pnl',cc:'bl',vc:'bl'},
+    {lbl:'COR',k:'pcogs',cc:'bl',vc:'bl'},
+    {lbl:'Loss Rate (avg)',k:'pnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COR Rate (avg)',k:'pcogsr',cc:'bl',vc:'bl',bps:true},
   ]);
   renderMets('bp-metrics',[
-    {lbl:'Net Losses',k:'bnl',cc:'bl',vc:'bl'},
-    {lbl:'COGS',k:'bcogs',cc:'bl',vc:'bl'},
-    {lbl:'Net Loss Rate (avg)',k:'bnlr',cc:'bl',vc:'bl',bps:true},
-    {lbl:'COGS Rate (avg)',k:'bcogsr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'Losses',k:'bnl',cc:'bl',vc:'bl'},
+    {lbl:'COR',k:'bcogs',cc:'bl',vc:'bl'},
+    {lbl:'Loss Rate (avg)',k:'bnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COR Rate (avg)',k:'bcogsr',cc:'bl',vc:'bl',bps:true},
   ]);
   renderMets('pr-metrics',[
-    {lbl:'Net Losses',k:'prnl',cc:'bl',vc:'bl'},
-    {lbl:'COGS',k:'prcogs',cc:'bl',vc:'bl'},
-    {lbl:'Net Loss Rate (avg)',k:'prnlr',cc:'bl',vc:'bl',bps:true},
-    {lbl:'COGS Rate (avg)',k:'prcogsr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'Losses',k:'prnl',cc:'bl',vc:'bl'},
+    {lbl:'COR',k:'prcogs',cc:'bl',vc:'bl'},
+    {lbl:'Loss Rate (avg)',k:'prnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COR Rate (avg)',k:'prcogsr',cc:'bl',vc:'bl',bps:true},
   ]);
   renderMets('ol-metrics',[
-    {lbl:'Net Losses',k:'olnl',cc:'bl',vc:'bl'},
-    {lbl:'COGS',k:'olcogs',cc:'bl',vc:'bl'},
-    {lbl:'Net Loss Rate (avg)',k:'olnlr',cc:'bl',vc:'bl',bps:true},
-    {lbl:'COGS Rate (avg)',k:'olcogsr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'Losses',k:'olnl',cc:'bl',vc:'bl'},
+    {lbl:'COR',k:'olcogs',cc:'bl',vc:'bl'},
+    {lbl:'Loss Rate (avg)',k:'olnlr',cc:'bl',vc:'bl',bps:true},
+    {lbl:'COR Rate (avg)',k:'olcogsr',cc:'bl',vc:'bl',bps:true},
   ]);
 }
 
 // ═══════════════════════════════════
 // YTD
 // ═══════════════════════════════════
-function ytdUpdate(v) {
-  ytdMo=parseInt(v);
-  const mos=ML.fy26;
-  document.getElementById('ytd-chip').textContent=mos[ytdMo-1];
-  const sl=k=>TP2[k].fy26.slice(0,ytdMo);
-  const pnl=sl('pnl').reduce((a,b)=>a+b,0);
-  const bnl=Math.max(0,sl('bnl').reduce((a,b)=>a+b,0));
-  const pcogs=sl('pcogs').reduce((a,b)=>a+b,0);
-  const bcogs=Math.max(0,sl('bcogs').reduce((a,b)=>a+b,0));
-  const tcogs=sl('tcogs').reduce((a,b)=>a+b,0);
-  const pnlr=sl('pnlr').reduce((a,b)=>a+b,0)/ytdMo;
-  const bnlr=sl('bnlr').reduce((a,b)=>a+b,0)/ytdMo;
-  const pcogsr=sl('pcogsr').reduce((a,b)=>a+b,0)/ytdMo;
-  const bcogsr=sl('bcogsr').reduce((a,b)=>a+b,0)/ytdMo;
-  const thru=`Aug-25 → ${mos[ytdMo-1]}`;
-  const kpis=[
-    {l:'Payments Net Losses YTD',v:'$'+pnl.toFixed(1)+'M',s:thru},
-    {l:'Bill Pay Net Losses YTD',v:'$'+bnl.toFixed(1)+'M',s:thru},
-    {l:'Payments COGS YTD',v:'$'+pcogs.toFixed(1)+'M',s:thru},
-    {l:'Bill Pay COGS YTD',v:'$'+bcogs.toFixed(1)+'M',s:thru},
-    {l:'Total COGS YTD',v:'$'+tcogs.toFixed(1)+'M',s:thru},
-    {l:'Pmt Loss Rate (avg)',v:pnlr.toFixed(1)+' bps',s:'period avg'},
-    {l:'BP Loss Rate (avg)',v:bnlr.toFixed(1)+' bps',s:'period avg'},
-    {l:'Pmt COGS Rate (avg)',v:pcogsr.toFixed(1)+' bps',s:''},
-    {l:'BP COGS Rate (avg)',v:bcogsr.toFixed(1)+' bps',s:''},
-  ];
-  document.getElementById('ytd-kpis').innerHTML=kpis.map(k=>
-    `<div class="ytd-kpi"><div class="ytd-kpi-lbl">${k.l}</div><div class="ytd-kpi-val">${k.v}</div>${k.s?`<div class="ytd-kpi-sub">${k.s}</div>`:''}</div>`
-  ).join('');
+// Show/hide toggle for any YTD tracker block
+function toggleYtd(blockId, btn) {
+  const b=document.getElementById(blockId); if(!b) return;
+  b.classList.toggle('collapsed');
+  if(btn) btn.textContent=b.classList.contains('collapsed')?'Show':'Hide';
 }
 
+// Overview fiscal-year-to-date tracker: 5 columns — Payments, Bill Pay, All Payroll, OL Payroll, Total.
+// Each product column stacks: Losses YTD, Loss Rate (YTD), COGS YTD, COGS Rate (YTD).
+// Rate = weighted YTD (Σ$ through the month / Σdenominator), NOT an average of the monthly rates.
+// Total column = Losses YTD + COGS YTD, each summed over Payments + Bill Pay + All Payroll.
+function ytdBuild(fy, mo, chipId, gridId) {
+  mo=parseInt(mo);
+  const mos=ML[fy];
+  const chip=document.getElementById(chipId); if(chip) chip.textContent=mos[mo-1];
+  const sl=k=>(TP2[k]&&TP2[k][fy]?TP2[k][fy].slice(0,mo):[]);
+  const sum=k=>sl(k).reduce((a,b)=>a+b,0);
+  const rate=k=>{const w=wtRate(TP2,fy,k,mo);return w==null?0:w;};
+  const thru=`${mos[0]} → ${mos[mo-1]}`;
+  const kpi=(l,v,s)=>`<div class="ytd-kpi"><div class="ytd-kpi-lbl">${l}</div><div class="ytd-kpi-val">${v}</div>${s?`<div class="ytd-kpi-sub">${s}</div>`:''}</div>`;
+  const prodCol=(name,pre)=>{
+    const nl=Math.max(0,sum(pre+'nl')), cogs=Math.max(0,sum(pre+'cogs'));
+    const nlr=rate(pre+'nlr'), cogsr=rate(pre+'cogsr');
+    return `<div class="ytd-col"><div class="ytd-col-ttl">${name}</div>`
+      + kpi('Losses YTD','$'+nl.toFixed(1)+'M',thru)
+      + kpi('Loss Rate (YTD)',nlr.toFixed(1)+' bps',thru)
+      + kpi('COR YTD','$'+cogs.toFixed(1)+'M',thru)
+      + kpi('COR Rate (YTD)',cogsr.toFixed(1)+' bps',thru)
+      + `</div>`;
+  };
+  const totNl=Math.max(0,sum('pnl'))+Math.max(0,sum('bnl'))+Math.max(0,sum('prnl'));
+  const totCogs=Math.max(0,sum('pcogs'))+Math.max(0,sum('bcogs'))+Math.max(0,sum('prcogs'));
+  const totCol=`<div class="ytd-col"><div class="ytd-col-ttl">Total</div>`
+    + kpi('Losses YTD','$'+totNl.toFixed(1)+'M','Pmts + Bill Pay + Payroll · '+thru)
+    + kpi('COR YTD','$'+totCogs.toFixed(1)+'M','Pmts + Bill Pay + Payroll · '+thru)
+    + `</div>`;
+  const grid=document.getElementById(gridId); if(!grid) return;
+  grid.innerHTML=prodCol('Payments','p')+prodCol('Bill Pay','b')+prodCol('All Payroll','pr')+prodCol('OL Payroll','ol')+totCol;
+}
+function ytdUpdate(v) { ytdMo=parseInt(v); ytdBuild('fy26', v, 'ytd-chip', 'ytd-kpis'); }
+function ytd27Update(v) { ytdBuild('fy27', v, 'ytd-chip-27', 'ytd-kpis-27'); }
+
 // Per-tab YTD tracker. `tab` = the tab/element suffix (pm, bp, pr, ol); each maps to its
-// metric-key prefix. YTD is always FY26 monthly (Aug-25 → selected month), independent of Period.
+// metric-key prefix. `fy` = 'fy26' (default; element suffix = tab) or 'fy27' (element suffix = tab+'27').
 const YTD_CFG={
   pm:{pre:'p',  volLbl:'TPV'},
   bp:{pre:'b',  volLbl:'TPV'},
   pr:{pre:'pr', volLbl:'Volume'},
   ol:{pre:'ol', volLbl:'Volume'},
 };
-function productYtd(tab, v) {
+function productYtd(tab, v, fy) {
   const cfg=YTD_CFG[tab]; if(!cfg) return;
+  fy=fy||'fy26';
+  const sfx=tab+(fy==='fy27'?'27':'');
   const pre=cfg.pre;
   const mo=parseInt(v);
-  const mos=ML.fy26;
-  const chip=document.getElementById('ytd-chip-'+tab); if(chip) chip.textContent=mos[mo-1];
-  const sl=k=>(TP2[k]&&TP2[k].fy26?TP2[k].fy26.slice(0,mo):[]);
+  const mos=ML[fy];
+  const chip=document.getElementById('ytd-chip-'+sfx); if(chip) chip.textContent=mos[mo-1];
+  const sl=k=>(TP2[k]&&TP2[k][fy]?TP2[k][fy].slice(0,mo):[]);
   const sum=k=>sl(k).reduce((a,b)=>a+b,0);
-  const avg=k=>{const a=sl(k);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;};
+  const rate=k=>{const w=wtRate(TP2,fy,k,mo);return w==null?0:w;}; // weighted YTD rate, not monthly avg
   const tpv=sum(pre+'tpv');
   const nl=Math.max(0,sum(pre+'nl'));
   const cogs=Math.max(0,sum(pre+'cogs'));
-  const nlr=avg(pre+'nlr');
-  const cogsr=avg(pre+'cogsr');
-  const thru=`Aug-25 → ${mos[mo-1]}`;
+  const nlr=rate(pre+'nlr');
+  const cogsr=rate(pre+'cogsr');
+  const thru=`${mos[0]} → ${mos[mo-1]}`;
   const kpis=[
     {l:`${cfg.volLbl} YTD`,v:'$'+tpv.toFixed(1)+'B',s:thru},
-    {l:'Net Losses YTD',v:'$'+nl.toFixed(1)+'M',s:thru},
-    {l:'COGS YTD',v:'$'+cogs.toFixed(1)+'M',s:thru},
-    {l:'Net Loss Rate (avg)',v:nlr.toFixed(1)+' bps',s:'period avg'},
-    {l:'COGS Rate (avg)',v:cogsr.toFixed(1)+' bps',s:'period avg'},
+    {l:'Losses YTD',v:'$'+nl.toFixed(1)+'M',s:thru},
+    {l:'COR YTD',v:'$'+cogs.toFixed(1)+'M',s:thru},
+    {l:'Loss Rate (YTD)',v:nlr.toFixed(1)+' bps',s:thru},
+    {l:'COR Rate (YTD)',v:cogsr.toFixed(1)+' bps',s:thru},
   ];
-  const grid=document.getElementById('ytd-kpis-'+tab); if(!grid) return;
+  const grid=document.getElementById('ytd-kpis-'+sfx); if(!grid) return;
   grid.innerHTML=kpis.map(k=>
     `<div class="ytd-kpi"><div class="ytd-kpi-lbl">${k.l}</div><div class="ytd-kpi-val">${k.v}</div>${k.s?`<div class="ytd-kpi-sub">${k.s}</div>`:''}</div>`
   ).join('');
@@ -1387,59 +1549,78 @@ function productYtd(tab, v) {
 const TBL_ROWS=[
   {sec:'PAYMENTS'},
   {l:'TPV',k:'ptpv',bps:false,gb:true},
-  {l:'Net Losses',k:'pnl',bps:false},
-  {l:'Net Loss Rate (bps)',k:'pnlr',bps:true},
-  {l:'COGS',k:'pcogs',bps:false},
-  {l:'COGS Rate (bps)',k:'pcogsr',bps:true},
+  {l:'Losses',k:'pnl',bps:false},
+  {l:'Loss Rate (bps)',k:'pnlr',bps:true},
+  {l:'COR',k:'pcogs',bps:false},
+  {l:'COR Rate (bps)',k:'pcogsr',bps:true},
   {sec:'BILL PAY'},
   {l:'TPV',k:'btpv',bps:false,gb:true},
-  {l:'Net Losses',k:'bnl',bps:false},
-  {l:'Net Loss Rate (bps)',k:'bnlr',bps:true},
-  {l:'COGS',k:'bcogs',bps:false},
-  {l:'COGS Rate (bps)',k:'bcogsr',bps:true},
+  {l:'Losses',k:'bnl',bps:false},
+  {l:'Loss Rate (bps)',k:'bnlr',bps:true},
+  {l:'COR',k:'bcogs',bps:false},
+  {l:'COR Rate (bps)',k:'bcogsr',bps:true},
+  {sec:'BANKING'},
+  {l:'COR',k:'bkcogs',bps:false},
   {sec:'PAYROLL'},
   {l:'Volume',k:'prtpv',bps:false,gb:true},
-  {l:'Net Losses',k:'prnl',bps:false},
-  {l:'Net Loss Rate (bps)',k:'prnlr',bps:true},
-  {l:'COGS',k:'prcogs',bps:false},
-  {l:'COGS Rate (bps)',k:'prcogsr',bps:true},
+  {l:'Losses',k:'prnl',bps:false},
+  {l:'Loss Rate (bps)',k:'prnlr',bps:true},
+  {l:'COR',k:'prcogs',bps:false},
+  {l:'COR Rate (bps)',k:'prcogsr',bps:true},
+  // Total rows: heading text doubles as the (only) label; light-blue row so Delta red/green reads clearly.
+  {l:'TOTAL "PAYMENTS" COR',bps:false,total:true,compute:['pcogs','bcogs','bkcogs']},
+  {l:'TOTAL "PAYMENTS" + PAYROLL COR',bps:false,total:true,compute:['pcogs','bcogs','bkcogs','prcogs']},
 ];
 
 function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOverride) {
-  const inc27=showFY27();
-  const n26=cols26.length, n27=inc27?cols27.length:0;
-  const hdrs=inc27?['Metric',...cols26,'FY26',...cols27,'FY27']:['Metric',...cols26,'FY26'];
-  const gArr26=(k,bps)=>{const a=src[k]&&src[k].fy26;if(!a)return null;return isMon?[...a]:(bps?avgQ(a):sumQ(a));};
-  const gArr27=(k,bps)=>{const a=src[k]&&src[k].fy27;if(!a)return null;return isMon?[...a]:(bps?avgQ(a):sumQ(a));};
-  const gAnn=(fy,k,bps)=>{const a=src[k]&&src[k][fy];if(!a)return null;return bps?a.reduce((x,y)=>x+y,0)/a.length:a.reduce((x,y)=>x+y,0);};
+  // tblFy controls which fiscal-year column groups render: 'fy26' | 'fy27' | 'both'
+  const inc26=tblFy!=='fy27', inc27=tblFy!=='fy26';
+  // Monthly array for a row: a single key, or the element-wise sum of r.compute keys (aggregate rows).
+  // Returns null if any required source is missing (so the row shows "—").
+  const rowMonthly=(fy,r)=>{
+    if(r.compute){
+      const arrs=r.compute.map(k=>src[k]&&src[k][fy]);
+      if(arrs.some(a=>!a)) return null;
+      return arrs[0].map((_,i)=>arrs.reduce((s,a)=>s+(a[i]||0),0));
+    }
+    return src[r.k]&&src[r.k][fy]?src[r.k][fy]:null;
+  };
+  const gArr=(fy,r)=>{const a=rowMonthly(fy,r);if(!a)return null;return isMon?[...a]:(r.bps?avgQ(a):sumQ(a));};
+  // FY-total: weighted rate for bps rows (Σ$ / Σdenominator), plain sum otherwise. fmtOverride ⇒ Delta table (handled by caller).
+  const gAnn=(fy,r)=>{
+    const a=rowMonthly(fy,r);if(!a)return null;
+    if(r.bps){ const w=RATE_NUM[r.k]?wtRate(src,fy,r.k):null; return w!=null?w:a.reduce((x,y)=>x+y,0)/a.length; }
+    return a.reduce((x,y)=>x+y,0);
+  };
 
-  let html=`<div class="tbl-wrap" style="border-radius:0 0 8px 8px;overflow-x:auto;overflow-y:hidden;"><table class="st"><thead><tr>`;
-  hdrs.forEach((h,i)=>{
-    let cls='',lbl=h;
-    if(i>=1&&i<=n26){cls=clsPrefix+'26';if(isFcst('fy26',i-1)){cls+=' hfcst';if(isMon)lbl+='*';}}
-    else if(i===n26+1) cls=clsPrefix+'26 htot';
-    else if(i>=n26+2&&i<=n26+1+n27){cls=clsPrefix+'27 hfcst';lbl+=(isMon?'*':'');}
-    else if(i===n26+2+n27) cls=clsPrefix+'27 htot';
-    html+=`<th class="${cls}">${lbl}</th>`;
-  });
-  html+='</tr></thead><tbody>';
+  let hdr=`<th>Metric</th>`, nCols=1;
+  if(inc26){
+    cols26.forEach((h,i)=>{const f=isFcst('fy26',i);hdr+=`<th class="${clsPrefix}26${f?' hfcst':''}">${h}${f&&isMon?'*':''}</th>`;});
+    hdr+=`<th class="${clsPrefix}26 htot">FY26</th>`; nCols+=cols26.length+1;
+  }
+  if(inc27){
+    cols27.forEach(h=>{hdr+=`<th class="${clsPrefix}27 hfcst">${h}${isMon?'*':''}</th>`;});
+    hdr+=`<th class="${clsPrefix}27 htot">FY27</th>`; nCols+=cols27.length+1;
+  }
+  let html=`<div class="tbl-wrap" style="border-radius:0 0 8px 8px;overflow-x:auto;overflow-y:hidden;"><table class="st"><thead><tr>${hdr}</tr></thead><tbody>`;
   rows.forEach(r=>{
-    if(r.sec){html+=`<tr class="shd"><td colspan="${hdrs.length}">${r.sec}</td></tr>`;return;}
+    if(r.sec){html+=`<tr class="shd"><td colspan="${nCols}"><span class="shd-lbl">${r.sec}</span></td></tr>`;return;}
     const fmt=fmtOverride||(r.gb?fmtTpv:r.bps?fmtB:fmtM);
-    const dFmt=r.gb?fmtTpvd:r.bps?fmtBd:fmtMd;
-    const v26=gArr26(r.k,r.bps), v27=gArr27(r.k,r.bps);
-    if(!v26||(inc27&&!v27)){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">—</td></tr>`;return;}
-    const a26=gAnn('fy26',r.k,r.bps);
-    const a27=gAnn('fy27',r.k,r.bps);
+    const trCls=r.total?' class="totrow"':'';
+    const v26=inc26?gArr('fy26',r):null, v27=inc27?gArr('fy27',r):null;
+    if((inc26&&!v26)||(inc27&&!v27)){html+=`<tr${trCls}><td>${r.l}</td><td colspan="${nCols-1}" style="color:var(--text3);font-style:italic">—</td></tr>`;return;}
     const aDelta=!!fmtOverride;
-    html+=`<tr><td>${r.l}</td>`;
-    v26.forEach((v,i)=>{
-      const isDelta=!!fmtOverride;
-      const cls=`${clsPrefix}26${isFcst('fy26',i)?' fcst':''}${isDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
-      html+=`<td class="${cls}">${fmt(v)}</td>`;
-    });
-    html+=`<td class="${clsPrefix}26 tot${aDelta&&a26!=null?(a26>0?' d-up':' d-dn'):''}">${fmt(a26)}</td>`;
+    html+=`<tr${trCls}><td>${r.l}</td>`;
+    if(inc26){
+      const a26=gAnn('fy26',r);
+      v26.forEach((v,i)=>{
+        const cls=`${clsPrefix}26${isFcst('fy26',i)?' fcst':''}${aDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
+        html+=`<td class="${cls}">${fmt(v)}</td>`;
+      });
+      html+=`<td class="${clsPrefix}26 tot${aDelta&&a26!=null?(a26>0?' d-up':' d-dn'):''}">${fmt(a26)}</td>`;
+    }
     if(inc27){
+      const a27=gAnn('fy27',r);
       v27.forEach(v=>{
         const cls=`${clsPrefix}27 fcst${aDelta&&v!=null?(v>0?' d-up':' d-dn'):''}`;
         html+=`<td class="${cls}">${fmt(v)}</td>`;
@@ -1448,13 +1629,15 @@ function mkTableHtml(src, rows, isMon, cols26, cols27, title, clsPrefix, fmtOver
     }
     html+=`</tr>`;
   });
-  if(isMon) html+=`<tr><td colspan="${hdrs.length}" style="font-size:9px;color:var(--text3);padding:6px 10px">* = forecast period</td></tr>`;
+  if(isMon) html+=`<tr><td colspan="${nCols}" style="font-size:9px;color:var(--text3);padding:6px 10px">* = forecast period</td></tr>`;
   html+='</tbody></table></div>';
   return html;
 }
 
 const TBL_SRCS={
-  tp2:{data:()=>TP2, label:'Target Pass 3'},
+  tp2:{data:()=>TP2, label:'Target Pass 4'},
+  tp3:{data:()=>TP3_OLD, label:'Target Pass 3'},
+  rg27:{data:()=>RG_FY27, label:'FY27 Risk Goal'},
   refresh0629:{data:()=>REFRESH_0629, label:'06.29 Refresh'},
   junece:{data:()=>JUNE_CE, label:'June Current Estimate'},
   junecera:{data:()=>JUNE_CE_RA, label:'June Current Estimate (RA)'},
@@ -1467,7 +1650,9 @@ const TBL_SRCS={
 
 function tblSelHtml(id, selected, num) {
   const opts = [
-    {v:'tp2', l:'Target Pass 3'},
+    {v:'tp2', l:'Target Pass 4'},
+    {v:'tp3', l:'Target Pass 3'},
+    {v:'rg27', l:'FY27 Risk Goal'},
     {v:'refresh0629', l:'06.29 Refresh'},
     {v:'junece', l:'June Current Estimate'},
     {v:'junecera', l:'June Current Estimate (RA)'},
@@ -1491,7 +1676,7 @@ function buildTable() {
   const cols26=isMon?ML.fy26:QL.fy26, cols27=isMon?ML.fy27:QL.fy27;
 
   const selT1=document.getElementById('sel-t1')?.value||'tp2';
-  const selT2=document.getElementById('sel-t2')?.value||'mfp2';
+  const selT2=document.getElementById('sel-t2')?.value||'tp3';
   const D1=TBL_SRCS[selT1].data(), D2=TBL_SRCS[selT2].data();
   const lbl1=TBL_SRCS[selT1].label, lbl2=TBL_SRCS[selT2].label;
 
@@ -1501,48 +1686,62 @@ function buildTable() {
   // Table 2
   html += `<div class="tbl-block">${tblSelHtml('sel-t2', selT2, 2)}${mkTableHtml(D2, TBL_ROWS, isMon, cols26, cols27, '', 'ht', null)}</div>`;
 
-  // Delta: T1 - T2
+  // Delta: T1 - T2. Effective monthly array per dataset = single key or element-wise sum of compute keys.
+  const rowArr=(D,fy,r)=>{
+    if(r.compute){ const arrs=r.compute.map(k=>D[k]&&D[k][fy]); if(arrs.some(a=>!a)) return null;
+      return arrs[0].map((_,i)=>arrs.reduce((s,a)=>s+(a[i]||0),0)); }
+    return D[r.k]&&D[r.k][fy]?D[r.k][fy]:null;
+  };
+  const rowId=r=>r.compute?('cmp:'+r.compute.join('+')):r.k;
   const DELTA={};
   TBL_ROWS.forEach(r=>{
-    if(!r.k) return;
-    const a26=D1[r.k]?.fy26, a27=D1[r.k]?.fy27;
-    const b26=D2[r.k]?.fy26, b27=D2[r.k]?.fy27;
-    DELTA[r.k]={};
-    if(a26&&b26) DELTA[r.k].fy26=a26.map((v,i)=>b26[i]!=null?v-b26[i]:null);
-    else if(a26) DELTA[r.k].fy26=a26.map(()=>null);
-    if(a27&&b27) DELTA[r.k].fy27=a27.map((v,i)=>b27[i]!=null?v-b27[i]:null);
-    else if(a27) DELTA[r.k].fy27=a27.map(()=>null);
+    if(r.sec) return;
+    const id=rowId(r); DELTA[id]={};
+    ['fy26','fy27'].forEach(fy=>{
+      const a=rowArr(D1,fy,r), b=rowArr(D2,fy,r);
+      if(a&&b) DELTA[id][fy]=a.map((v,i)=>b[i]!=null?v-b[i]:null);
+      else if(a) DELTA[id][fy]=a.map(()=>null);
+    });
   });
 
-  const inc27=showFY27();
-  const n26=cols26.length, n27=inc27?cols27.length:0;
-  const hdrs=inc27?['Metric',...cols26,'FY26',...cols27,'FY27']:['Metric',...cols26,'FY26'];
-  html += `<div class="tbl-block"><div class="tbl-delta-hdr"><span class="tbl-delta-lbl" style="font-size:14px;font-weight:700;color:#fff;">Delta</span><span class="tbl-delta-sub">${lbl1} − ${lbl2}</span></div><div class="tbl-wrap"><table class="st"><thead><tr>`;
-  hdrs.forEach((h,i)=>{
-    let cls='',lbl=h;
-    if(i>=1&&i<=n26){cls='hd26';if(isFcst('fy26',i-1)){cls+=' hfcst';if(isMon)lbl+='*';}}
-    else if(i===n26+1) cls='hd26 htot';
-    else if(i>=n26+2&&i<=n26+1+n27){cls='hd27 hfcst';lbl+=(isMon?'*':'');}
-    else if(i===n26+2+n27) cls='hd27 htot';
-    html+=`<th class="${cls}">${lbl}</th>`;
-  });
-  html+='</tr></thead><tbody>';
+  const inc26=tblFy!=='fy27', inc27=tblFy!=='fy26';
+  let dHdr=`<th>Metric</th>`, nCols=1;
+  if(inc26){
+    cols26.forEach((h,i)=>{const f=isFcst('fy26',i);dHdr+=`<th class="hd26${f?' hfcst':''}">${h}${f&&isMon?'*':''}</th>`;});
+    dHdr+=`<th class="hd26 htot">FY26</th>`; nCols+=cols26.length+1;
+  }
+  if(inc27){
+    cols27.forEach(h=>{dHdr+=`<th class="hd27 hfcst">${h}${isMon?'*':''}</th>`;});
+    dHdr+=`<th class="hd27 htot">FY27</th>`; nCols+=cols27.length+1;
+  }
+  html += `<div class="tbl-block"><div class="tbl-delta-hdr"><span class="tbl-delta-lbl" style="font-size:14px;font-weight:700;color:#fff;">Delta</span><span class="tbl-delta-sub">${lbl1} − ${lbl2}</span></div><div class="tbl-wrap"><table class="st"><thead><tr>${dHdr}</tr></thead><tbody>`;
   TBL_ROWS.forEach(r=>{
-    if(r.sec){html+=`<tr class="shd"><td colspan="${hdrs.length}">${r.sec}</td></tr>`;return;}
+    if(r.sec){html+=`<tr class="shd"><td colspan="${nCols}"><span class="shd-lbl">${r.sec}</span></td></tr>`;return;}
     const dFmt=r.gb?fmtTpvd:r.bps?fmtBd:fmtMd;
-    const d26=DELTA[r.k]?.fy26, d27=DELTA[r.k]?.fy27;
+    const _id=rowId(r);
+    const d26=DELTA[_id]?.fy26, d27=DELTA[_id]?.fy27;
+    const dTrCls=r.total?' class="totrow"':'';
     const dArr26=d26?(isMon?d26:(r.bps?avgQ(d26):sumQ(d26))):null;
     const dArr27=d27?(isMon?d27:(r.bps?avgQ(d27):sumQ(d27))):null;
-    if(!dArr26||(inc27&&!dArr27)){html+=`<tr><td>${r.l}</td><td colspan="${hdrs.length-1}" style="color:var(--text3);font-style:italic">no data</td></tr>`;return;}
-    const da26=r.bps?d26.reduce((a,b)=>a+(b||0),0)/d26.length:d26.reduce((a,b)=>a+(b||0),0);
-    const da27=inc27?(r.bps?d27.reduce((a,b)=>a+(b||0),0)/d27.length:d27.reduce((a,b)=>a+(b||0),0)):null;
+    if((inc26&&!dArr26)||(inc27&&!dArr27)){html+=`<tr${dTrCls}><td>${r.l}</td><td colspan="${nCols-1}" style="color:var(--text3);font-style:italic">no data</td></tr>`;return;}
     const dSign=(v)=>v==null?'':(Math.abs(v)<0.05?' d-zero':v>0?' d-up':' d-dn');
-    html+=`<tr><td>${r.l}</td>`;
-    dArr26.forEach((v,i)=>{
-      html+=`<td class="hd26${isFcst('fy26',i)?' fcst':''}${dSign(v)}">${dFmt(v)}</td>`;
-    });
-    html+=`<td class="hd26 tot${dSign(da26)}">${dFmt(da26)}</td>`;
+    // FY-total delta for a bps row = (T1 weighted annual rate) − (T2 weighted annual rate), so it matches
+    // the per-table weighted FY totals. Non-rate rows: sum of the monthly deltas.
+    const annDelta=(fy,arr)=>{
+      if(r.bps){ const w1=RATE_NUM[r.k]?wtRate(D1,fy,r.k):null, w2=RATE_NUM[r.k]?wtRate(D2,fy,r.k):null;
+        if(w1!=null&&w2!=null) return w1-w2; return arr.reduce((a,b)=>a+(b||0),0)/arr.length; }
+      return arr.reduce((a,b)=>a+(b||0),0);
+    };
+    html+=`<tr${dTrCls}><td>${r.l}</td>`;
+    if(inc26){
+      const da26=annDelta('fy26',d26);
+      dArr26.forEach((v,i)=>{
+        html+=`<td class="hd26${isFcst('fy26',i)?' fcst':''}${dSign(v)}">${dFmt(v)}</td>`;
+      });
+      html+=`<td class="hd26 tot${dSign(da26)}">${dFmt(da26)}</td>`;
+    }
     if(inc27){
+      const da27=annDelta('fy27',d27);
       dArr27.forEach(v=>{
         html+=`<td class="hd27 fcst${dSign(v)}">${dFmt(v)}</td>`;
       });
@@ -1551,7 +1750,7 @@ function buildTable() {
     html+=`</tr>`;
   });
   const note=isMon?'* = forecast period · ':'';
-  html+=`<tr><td colspan="${hdrs.length}" style="font-size:9px;color:var(--text3);padding:6px 10px">${note}positive = T1 higher than T2</td></tr>`;
+  html+=`<tr><td colspan="${nCols}" style="font-size:9px;color:var(--text3);padding:6px 10px">${note}positive = T1 higher than T2</td></tr>`;
   html+='</tbody></table></div></div>';
 
   document.getElementById('tbl-body').innerHTML=html;
@@ -1565,7 +1764,7 @@ function buildTable() {
 // ═══════════════════════════════════
 function updatePills() {
   const lbl=zoom==='fy26'?'FY26':zoom==='fy2627'?'FY26–27':'FY25–29';
-  ['z-ov','z-ov2','z-ov3','z-ov4','z-ov5','z-pm','z-pm2','z-pm3','z-pm4','z-pm5','z-bp','z-bp2','z-bp3','z-bp4','z-bp5','z-pr','z-pr2','z-pr3','z-pr4','z-pr5','z-ol','z-ol2','z-ol3','z-ol4','z-ol5'].forEach(id=>{
+  ['z-ov','z-ov2','z-ov3','z-ov4','z-ov5','z-pm','z-pm2','z-pm3','z-pm4','z-pm5','z-bp','z-bp2','z-bp3','z-bp4','z-bp5','z-pr','z-pr2','z-pr3','z-pr4','z-pr5','z-ol','z-ol2','z-ol3','z-ol4','z-ol5','z-ol6','z-ol7'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.textContent=lbl;
   });
   // Card subtitles: "FY26 vs FY27" when FY27 shown, "FY26" when FY26-only
@@ -1578,7 +1777,7 @@ function updateCmpBanners() {
   ['cmp-ov','cmp-pm','cmp-bp','cmp-pr','cmp-ol'].forEach(id=>{
     const e=document.getElementById(id); if(!e) return;
     e.classList.toggle('on', on);
-    if(on) e.innerHTML=`&#9432; Comparing: <strong>Target Pass 3</strong> (dark) vs <strong>${lbl}</strong> (light)`;
+    if(on) e.innerHTML=`&#9432; Comparing: <strong>Target Pass 4</strong> (dark) vs <strong>${lbl}</strong> (light)`;
   });
 }
 
@@ -1598,6 +1797,7 @@ function render() {
   }
   if (tab==='pm') {
     productYtd('pm', document.getElementById('ytd-sl-pm')?.value||12);
+    productYtd('pm', document.getElementById('ytd-sl-pm27')?.value||12, 'fy27');
     legBar('leg-pnl');    draw('c-pnl',   'bar',  barDs('pnl'),   barOpts(false));
     legLine('leg-pnlr');  draw('c-pnlr',  'line', lineDs('pnlr'), lineOpts());
     legBar('leg-pcogs');  draw('c-pcogs', 'bar',  barDs('pcogs'), barOpts(false));
@@ -1605,6 +1805,7 @@ function render() {
   }
   if (tab==='bp') {
     productYtd('bp', document.getElementById('ytd-sl-bp')?.value||12);
+    productYtd('bp', document.getElementById('ytd-sl-bp27')?.value||12, 'fy27');
     legBar('leg-bnl');    draw('c-bnl',   'bar',  barDs('bnl'),   barOpts(false));
     legLine('leg-bnlr');  draw('c-bnlr',  'line', lineDs('bnlr'), lineOpts());
     legBar('leg-bcogs');  draw('c-bcogs', 'bar',  barDs('bcogs'), barOpts(false));
@@ -1612,6 +1813,7 @@ function render() {
   }
   if (tab==='pr') {
     productYtd('pr', document.getElementById('ytd-sl-pr')?.value||12);
+    productYtd('pr', document.getElementById('ytd-sl-pr27')?.value||12, 'fy27');
     legBar('leg-prnl');    draw('c-prnl',   'bar',  barDs('prnl'),   barOpts(false));
     legLine('leg-prnlr');  draw('c-prnlr',  'line', lineDs('prnlr'), lineOpts());
     legBar('leg-prcogs');  draw('c-prcogs', 'bar',  barDs('prcogs'), barOpts(false));
@@ -1619,10 +1821,13 @@ function render() {
   }
   if (tab==='ol') {
     productYtd('ol', document.getElementById('ytd-sl-ol')?.value||12);
+    productYtd('ol', document.getElementById('ytd-sl-ol27')?.value||12, 'fy27');
     legBar('leg-olnl');    draw('c-olnl',   'bar',  barDs('olnl'),   barOpts(false));
     legLine('leg-olnlr');  draw('c-olnlr',  'line', lineDs('olnlr'), lineOpts());
     legBar('leg-olcogs');  draw('c-olcogs', 'bar',  barDs('olcogs'), barOpts(false));
     legLine('leg-olcogsr');draw('c-olcogsr','line', lineDs('olcogsr'),lineOpts());
+    legBar('leg-olrec');   draw('c-olrec',  'bar',  barDs('olrec'),  barOpts(false));
+    legLine('leg-olrecr'); draw('c-olrecr', 'line', lineDs('olrecr'),lineOpts('%'));
   }
 }
 
@@ -1640,6 +1845,11 @@ function setPeriod(p) {
   period=p;
   document.querySelectorAll('#pg-period .pill').forEach(b=>b.classList.toggle('on',b.textContent.trim().toLowerCase()===p));
   render();
+}
+function setTblFy(f) {
+  tblFy=f;
+  document.querySelectorAll('#pg-tblfy .pill').forEach(b=>b.classList.toggle('on',b.dataset.tblfy===f));
+  buildTable();
 }
 function setTab(t) {
   tab=t;
@@ -1669,7 +1879,10 @@ function toggleCmp() {
 window.addEventListener('load', () => {
   Chart.register(ChartDataLabels);
   ytdUpdate(12);
+  ytd27Update(12);
   requestAnimationFrame(() => requestAnimationFrame(() => render()));
+  // rAF is throttled/paused in background or embedded tabs — fall back to a timer if render hasn't run
+  setTimeout(() => { if (!Chart.getChart(document.getElementById('c-tnl'))) render(); }, 400);
 });
 </script>
 </body>
