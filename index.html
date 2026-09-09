@@ -1389,10 +1389,14 @@ function lineDs(key) {
       // firstFcst = index of first forecast month; last actual = firstFcst-1.
       // Solid covers actuals through last actual; dashed starts AT the last actual so the
       // last-actual→first-forecast segment renders dotted (the shared point is the bridge).
+      // When firstFcst===n the whole year is actual — skip the dashed write here entirely;
+      // the cross-year Bridge step below supplies the connector into the NEXT year's forecast
+      // (otherwise a fully-actual year would draw a stale dashed bridge at its own last month,
+      // even when the real actual/forecast boundary has moved into the following year).
       const firstFcst = fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : fy==='fy27' ? DASH27 : 0;
       if (firstFcst > 0) {
         for (let i=0; i<firstFcst; i++) solid[off+i] = vals[i];
-        for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
+        if (firstFcst < n) for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
       } else {
         for (let i=0; i<n; i++) dashed[off+i] = vals[i];
       }
@@ -1401,7 +1405,7 @@ function lineDs(key) {
       const firstFcst = fy==='fy25' ? 3 : fy==='fy26' ? QDASH26 : fy==='fy27' ? QDASH27 : 0;
       if (firstFcst > 0) {
         for (let i=0; i<firstFcst; i++) solid[off+i] = vals[i];
-        for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
+        if (firstFcst < n) for (let i=firstFcst-1; i<n; i++) dashed[off+i] = vals[i];
       } else {
         for (let i=0; i<n; i++) dashed[off+i] = vals[i];
       }
@@ -1467,13 +1471,15 @@ function lineDs2(key1, key2, label1, label2) {
       const vals = getArr(ACT(),fy,key,false); if(!vals) return;
       const off = fi*n;
       // firstFcst = index of first forecast period; dashed starts at firstFcst-1 (the last
-      // actual) so the last-actual→first-forecast segment renders dotted.
+      // actual) so the last-actual→first-forecast segment renders dotted. When firstFcst===n
+      // the whole year is actual — skip the dashed write; the cross-year Bridge step below
+      // supplies the connector into the next year's forecast (see lineDs() for the same fix).
       const firstFcst = period==='monthly'
         ? (fy==='fy25' ? ACT25 : fy==='fy26' ? DASH26 : fy==='fy27' ? DASH27 : 0)
         : (fy==='fy25' ? 3 : fy==='fy26' ? QDASH26 : fy==='fy27' ? QDASH27 : 0); // FY26 fully actual; FY27 Aug-26 actual (DASH27=1)
       if(firstFcst>0){
         for(let i=0;i<firstFcst;i++) solid[off+i]=vals[i];
-        for(let i=firstFcst-1;i<n;i++) dashed[off+i]=vals[i];
+        if(firstFcst<n) for(let i=firstFcst-1;i<n;i++) dashed[off+i]=vals[i];
       } else {
         for(let i=0;i<n;i++) dashed[off+i]=vals[i];
       }
